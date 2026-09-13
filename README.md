@@ -3,7 +3,7 @@
 Proyecto Integrador de Ciencia de Datos — **Fase 1**: comprensión del problema, comprensión y selección de
 los datos, limpieza y transformación, análisis univariado y bivariado, análisis descriptivo y exploratorio.
 
-**Integrantes:** Apellido1, Nombre (legajo) · Apellido2, Nombre (legajo) · Apellido3, Nombre (legajo)
+**Integrantes:** Matías Morínigo · César Vielman · Iván Paredes
 
 ---
 
@@ -17,7 +17,7 @@ los datos, limpieza y transformación, análisis univariado y bivariado, anális
 
 La propuesta original de este proyecto apuntaba al abandono escolar usando registros administrativos del
 MEC. Al inventariar los archivos efectivamente disponibles se comprobó que **ningún dataset del MEC
-contiene una variable de abandono o deserción**, y que la matrícula del MEC sólo cubre un año (2023). La
+contiene una variable de abandono o deserción**. La
 **Encuesta Permanente de Hogares Continua (EPHC)** de la DGEEC, en cambio, pregunta directamente al hogar
 si el adolescente asiste y, si no, por qué — la variable que la propuesta original necesitaba. El costo de
 este cambio: la unidad de análisis pasa de *establecimiento* a *persona dentro de un hogar*, con diseño
