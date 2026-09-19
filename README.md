@@ -5,6 +5,8 @@ los datos, limpieza y transformación, análisis univariado y bivariado, anális
 
 **Integrantes:** Matías Morínigo · César Vielman · Iván Paredes
 
+**Entrega Fase 1:** `output/Informe_Fase1.pdf` · `output/fase1_comprension_problema.pdf` · notebook ejecutado.
+
 ---
 
 ## Pregunta de investigación

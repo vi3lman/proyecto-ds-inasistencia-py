@@ -1,0 +1,17 @@
+campo,tipo_detectado,tipo_correcto,descripcion,unidad,n_unicos,rango_o_categorias,pct_faltantes
+UPM,int64,entero,Unidad primaria de muestreo del diseño de la EPHC,código,1788,"[14.00 — 28,774.00]",0.0
+NVIVI,int64,entero,Número de vivienda dentro de la UPM,código,151,[1.00 — 975.00],0.0
+NHOGA,int64,entero,Número de hogar dentro de la vivienda,código,3,"1, 2, 3",0.0
+AÑO,int64,entero,Año calendario de la ronda de la encuesta (campo original),año,3,"2022, 2023, 2024",0.0
+DPTO,int64,categórica ordinal (código),Departamento de residencia (código DGEEC 0–15),código,16,[0.00 — 15.00],0.0
+AREA,int64,categórica (código),"Zona de residencia: 1 urbana, 6 rural",código,2,"1, 6",0.0
+L02,int64,entero,Número de línea / persona dentro del hogar,código,27,[1.00 — 27.00],0.0
+P02,int64,entero,Edad en años cumplidos,años,107,[0.00 — 106.00],0.0
+P04,int64,categórica (código),Relación con el hogar (filtro: miembro del hogar),código,1,1,0.0
+P06,int64,categórica (código),"Sexo: 1 hombre, 6 mujer",código,2,"6, 1",0.0
+ED03,str,categórica (código),¿Sabe leer y escribir?,código,4,"1,  , 6, 9",0.0
+ED08,str,categórica (código),Nivel/modalidad al que asiste; 19 = no asiste,código,21,"19,  , 2, 16, 3, 1 … (+15)",0.0
+ED09,str,categórica (código),"Sector de la institución (oficial, privado, subvencionado)",código,5," , 1, 2, 3, 9",0.0
+ED10,str,categórica (código),Motivo de no asistir o de haber dejado de asistir,código,20," , 2, 1, 14, 15, 6 … (+14)",0.0
+FEX.2022,float64,continuo,Factor de expansión muestral (personas representadas),personas,35603,"[10.16 — 1,017.69]",0.0
+anio_encuesta,int64,entero,"Año de la ronda, reconstruido al concatenar los tres CSV",año,3,"2022, 2023, 2024",0.0

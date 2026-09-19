@@ -1,0 +1,168 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
+<title>Informe Fase 1 — Inasistencia escolar</title><style>
+@page { size: A4; margin: 16mm 16mm 18mm 16mm; }
+html, body { font-family: "Source Sans 3", "Segoe UI", Helvetica, Arial, sans-serif;
+  color: #1a1a1a; font-size: 11pt; line-height: 1.45; }
+h1 { font-size: 18pt; margin: 0 0 6px; }
+h2 { font-size: 13.5pt; margin: 18px 0 8px; border-bottom: 1.5px solid #1f4e79; padding-bottom: 3px; color: #1f4e79; }
+h3 { font-size: 11.5pt; margin: 14px 0 6px; color: #2e5a88; }
+.meta { color: #444; font-size: 10pt; margin-bottom: 14px; }
+.meta p { margin: 2px 0; }
+p { margin: 0 0 8px; text-align: justify; }
+ul, ol { margin: 4px 0 10px 18px; }
+li { margin-bottom: 3px; }
+table { border-collapse: collapse; width: 100%; font-size: 9.5pt; margin: 8px 0 12px; }
+th, td { border: 1px solid #c9d4e0; padding: 4px 6px; vertical-align: top; }
+th { background: #1f4e79; color: #fff; text-align: left; }
+tr:nth-child(even) td { background: #f4f7fa; }
+.fig { text-align: center; margin: 10px 0 14px; page-break-inside: avoid; }
+.fig img { max-width: 100%; max-height: 88mm; }
+.caption { font-size: 9pt; color: #333; margin-top: 4px; font-style: italic; }
+.cover { text-align: center; margin: 24px 0 28px; }
+.cover h1 { font-size: 20pt; }
+.kicker { letter-spacing: .08em; text-transform: uppercase; font-size: 9pt; color: #1f4e79; }
+.box { background: #eef3f8; border-left: 4px solid #1f4e79; padding: 8px 12px; margin: 10px 0 14px; }
+.small { font-size: 9pt; color: #444; }
+</style></head><body>
+
+<div class="cover">
+  <div class="kicker">Proyecto Integrador de Ciencia de Datos — Informe de Fase 1</div>
+  <h1>Inasistencia escolar en la adolescencia paraguaya</h1>
+  <p>Magnitud, motivos declarados y brechas territoriales · EPHC 2022–2024</p>
+  <div class="meta">
+    <p><strong>Integrantes:</strong> Matías Morínigo · César Vielman · Iván Paredes</p>
+    <p>Asignatura: Data Science · Entrega: 15 de septiembre de 2026</p>
+    <p>Fuente: DGEEC, Encuesta Permanente de Hogares Continua (REG02 anual)</p>
+  </div>
+</div>
+
+<h2>1. Comprensión del problema y pregunta</h2>
+<p>El problema de decisión es cómo priorizar políticas de retención escolar en el tramo 12–17 años.
+La matrícula del MEC no registra el motivo de la no asistencia; la EPHC sí, porque pregunta al hogar
+si el adolescente asiste (ED08) y por qué no (ED10). Por eso este proyecto cambió de fuente: no hay
+variable de abandono en los abiertos del MEC. El costo es metodológico: unidad de análisis = persona
+en un hogar, y todo estadístico descriptivo va ponderado por el factor de expansión (FEX).</p>
+<div class="box">¿En qué medida la zona de residencia (urbana/rural) y el departamento se asocian
+con la tasa de inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos
+declaran los hogares para explicar esa inasistencia, entre 2022 y 2024?</div>
+<p><strong>Objetivo general:</strong> analizar esa asociación y caracterizar los motivos.
+En esta fase se cumplen OE1 (construir el panel) y OE2 (describir tasas y motivos). OE3 (contrastes)
+queda para Fase 2 y OE4 (clasificación de riesgo) para Fase 3.</p>
+
+<h2>2. Datos, unidad y calidad</h2>
+<table>
+<tr><th>Ítem</th><th>Valor</th></tr>
+<tr><td>Archivos</td><td>REG02_EPHC_ANUAL_2022/2023/2024.csv (separador ; / decimal ,)</td></tr>
+<tr><td>Filas crudas</td><td>61.912 + 58.005 + 57.744 = 177.661 personas, todas las edades</td></tr>
+<tr><td>Universo analizado</td><td>18.558 personas de 12–17 años (población ponderada: 1.846.521)</td></tr>
+<tr><td>No asistentes (muestra)</td><td>1.504; 100 % con motivo ED10 válido</td></tr>
+<tr><td>Unidad</td><td>Persona dentro de un hogar, en un año (corte transversal repetido, no panel)</td></tr>
+<tr><td>Clave empírica</td><td>UPM + NVIVI + NHOGA + L02 + año: 0 duplicados</td></tr>
+<tr><td>Cobertura</td><td>16 departamentos. Ausentes: Boquerón y Alto Paraguay (Chaco)</td></tr>
+<tr><td>Descarga</td><td>Iván Paredes · 12 de septiembre de 2026 · microdatos públicos DGEEC</td></tr>
+</table>
+<p>El único punto de fricción de calidad fue de formato: sin <code>decimal=','</code> el FEX se lee
+como texto y las “sumas” concatenan cadenas. Se verificó dtype float64 al cargar. Los blancos de
+ED08/ED09/ED10 en el archivo crudo no son faltantes: son personas fuera del universo de la pregunta
+educativa; se resuelven al filtrar edad 12–17. Los pesos muestrales extremos se conservaron (son
+diseño, no error).</p>
+
+<h2>3. Limpieza (bitácora resumida)</h2>
+<ol>
+<li>Renombre a nombres de trabajo (edad, zona, motivo_inasistencia, factor_expansion, …).</li>
+<li>Decodificación de códigos DGEEC a etiquetas (zona, sexo, departamento, sector, motivo).</li>
+<li>Filtro a 12–17 años (177.661 → 18.558).</li>
+<li>Derivadas: <code>asiste_actualmente</code> / <code>no_asiste</code> colapsando ED08=19.</li>
+<li>Sin imputación de motivo ni de sector: el 91,6 % de nulos en motivo es estructural (quien asiste).</li>
+</ol>
+<p>Dataset limpio: <code>data/processed/dataset_fase1.parquet</code>.</p>
+
+<h2>4. Resultados descriptivos</h2>
+<h3>4.1 Universo y univariado</h3>
+<p>Cada edad de 12 a 17 pesa entre 16,2 % y 17,3 % (media 14,5). No se ve un hueco raro.
+El 58,5 % de la población representada es urbana y el 41,5 % rural; el sexo sale ~50/50.
+Cada año aporta alrededor de un tercio del peso. En 2024 hay menos casos de 17 años, pero
+el perfil agregado no se desarma.</p>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G2_histograma_edad.png" alt="Gráfico 2. Distribución ponderada de la edad en el universo 12–17."><div class="caption">Gráfico 2. Distribución ponderada de la edad en el universo 12–17.</div></div>
+
+<h3>4.2 La tasa y la brecha de zona</h3>
+<p>Tasa nacional ponderada: <strong>7,8 %</strong> (8,5 % en 2022, 7,5 % en 2023, 7,4 % en 2024).
+Pooled rural <strong>11,7 %</strong> vs. urbana <strong>5,1 %</strong> (más del doble). Varones 8,8 %,
+mujeres 6,8 %.</p>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G1_serie_tasa_zona.png" alt="Gráfico 1. Tasa de inasistencia 12–17 años por zona, 2022–2024 (ponderada)."><div class="caption">Gráfico 1. Tasa de inasistencia 12–17 años por zona, 2022–2024 (ponderada).</div></div>
+<p><strong>G1.</strong> Rural queda arriba los tres años: 12,8 % vs 5,2 % en 2022, 10,8 % vs 5,1 %
+en 2024. La distancia se achica (7,6 → 5,7 puntos) porque baja el campo, no porque suba la ciudad.
+Aun así, en 2024 sigue siendo más del doble.</p>
+
+<h3>4.3 Edad y asistencia</h3>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G3_edad_asistencia.png" alt="Gráfico 3. Edad según asiste / no asiste."><div class="caption">Gráfico 3. Edad según asiste / no asiste.</div></div>
+<p><strong>G3.</strong> Los que no asisten son más grandes (15,8 vs 14,4 años). La tasa va de 1,3 %
+a los 12 a 19,1 % a los 17. Se concentra cuando toca media, no parejo en todo el rango.</p>
+
+<h3>4.4 Departamentos</h3>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G4_barras_departamento.png" alt="Gráfico 4. Tasa de inasistencia por departamento (media nacional 7,8 %)."><div class="caption">Gráfico 4. Tasa de inasistencia por departamento (media nacional 7,8 %).</div></div>
+<p><strong>G4.</strong> Itapúa 12,8 % y San Pedro 12,6 % están peor; Capital 1,8 % y Paraguarí 3,7 %
+mejor (media nacional 7,8 %). El departamento con menos casos es Ñeembucú (465). Capital tiene 1.086,
+así que el 1,8 % no sale de cuatro personas.</p>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G8_dispersion_n_tasa.png" alt="Gráfico 8. Tasa departamental frente al n muestral."><div class="caption">Gráfico 8. Tasa departamental frente al n muestral.</div></div>
+<p><strong>G8.</strong> Las tasas altas no son las de muestra chica: Itapúa y San Pedro tienen n
+grande (1.637 y 1.310). Central, con más casos (2.829), está entre las más bajas. Ñeembucú (465)
+sí hay que leerlo más corto. En Fase 2 no tiramos Itapúa/San Pedro como ruido.</p>
+
+<h3>4.5 Motivos declarados</h3>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G6_motivos_nacional.png" alt="Gráfico 6. Ranking nacional de motivos de inasistencia."><div class="caption">Gráfico 6. Ranking nacional de motivos de inasistencia.</div></div>
+<p><strong>G6.</strong> Tres respuestas se llevan la mitad larga: no hay recursos (27,6 %),
+no quiere estudiar (22,2 %) y motivos familiares (20,4 %). Después, trabajar (10 %) y no haber
+institución cerca (7,3 %). No es un solo tipo de problema.</p>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G5_heatmap_motivo_zona.png" alt="Gráfico 5. Motivo declarado según zona (% dentro de cada zona)."><div class="caption">Gráfico 5. Motivo declarado según zona (% dentro de cada zona).</div></div>
+<p><strong>G5.</strong> “Sin recursos” es el n°1 en el campo y en la ciudad, casi igual (~27,5 %).
+Donde se parten es la oferta: no hay institución cerca es 11,2 % rural y 0,8 % urbana. En la ciudad
+suben “no quiere estudiar” (25,1 % vs 20,4 %) y tener que trabajar (11,8 % vs 8,9 %). El motivo
+económico es común; la falta de escuela cerca es un tema del campo.</p>
+
+<h3>4.6 Sector de quienes asisten</h3>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G7_sector_por_zona.png" alt="Gráfico 7. Sector educativo entre quienes asisten, por zona."><div class="caption">Gráfico 7. Sector educativo entre quienes asisten, por zona.</div></div>
+<p><strong>G7.</strong> De los que asisten, en el campo el 93 % está en oficial (privado + subvencionado
+~7 %). En la ciudad el oficial baja a 75 % y hay un 25 % no estatal. Si en el pueblo no hay colegio
+cerca, tampoco hay uno privado al lado.</p>
+
+<h2>5. Patrones, hipótesis y límites</h2>
+<table>
+<tr><th>#</th><th>Patrón</th><th>Evidencia</th></tr>
+<tr><td>P1</td><td>La tasa rural más que duplica a la urbana los tres años; la brecha se estrecha por caída rural.</td><td>G1</td></tr>
+<tr><td>P2</td><td>Inasistencia monótona en la edad: 1,3 % (12) → 19,1 % (17).</td><td>G3</td></tr>
+<tr><td>P3</td><td>Tres motivos concentran ~70 %; la falta de institución es casi solo rural.</td><td>G5, G6</td></tr>
+<tr><td>P4</td><td>Itapúa y San Pedro lideran con n grande; Capital es el mínimo con n = 1.086.</td><td>G4, G8</td></tr>
+<tr><td>A1</td><td>Ñeembucú (n = 465) es más impreciso. Boquerón y Alto Paraguay no están en la muestra.</td><td>G8, Etapa 2.6</td></tr>
+</table>
+<p><strong>H1</strong> tasa rural &gt; urbana (dos proporciones). <strong>H4</strong> inasistencia
+crece con la edad (Spearman / logística). <strong>H3</strong> diferencias entre departamentos.
+<strong>H2</strong> zona × motivo agrupado no independientes. <strong>H5</strong> la brecha de zona
+sobrevive al controlar departamento, edad y sexo. α = 0,05; Benjamini-Hochberg sobre H1–H4.
+Pendiente con el docente: contrastes sobre n muestral vs. replicación de pesos. Variable objetivo
+de Fase 3: <code>no_asiste</code>.</p>
+<p><strong>Límites:</strong> sin variables de establecimiento; no es panel; motivo autorreportado;
+FEX sin corrección de diseño en esta fase; chi-cuadrado exploratorio sobre población expandida
+infla el p-valor (V de Cramér zona×sector = 0,23 se usa solo como tamaño de asociación);
+resultados no extensibles al Chaco.</p>
+
+<h2>6. Conclusión de la Fase 1</h2>
+<p>Con lo descriptivo, zona y departamento se mueven con la inasistencia, y se mueven bastante:
+más del doble rural vs urbana, y unos 11 puntos entre Capital e Itapúa. Los hogares hablan sobre
+todo de plata, de no querer seguir y de la familia. La falta de escuela cerca aparece en el campo
+y casi no aparece en la ciudad.</p>
+<p>Esta fase no cierra si eso aguanta un test (Fase 2), si “rural” no es en realidad un departamento
+en particular (H5), ni si se puede anticipar el riesgo de una persona (Fase 3). Tampoco decimos
+causalidad: la encuesta no identifica el colegio ni sigue a los mismos pibes.</p>
+<p>Queda fijo: universo 12–17, objetivo <code>no_asiste</code>, descriptivos ponderados, sin imputar
+motivo y sin predictores de establecimiento en Fase 3. A Fase 2 llevamos H1 (zona), H4 (edad),
+H3 (departamento), H2 (motivo × zona) y H5 (zona controlando el resto).</p>
+
+<h2>7. Reproducibilidad y uso de IA</h2>
+<p>Notebook: <code>notebooks/Fase1_DataScience_EPHC.ipynb</code>. Dependencias:
+<code>requirements.txt</code>. Semilla 42. Figuras G1–G8 en <code>output/figuras/</code>.</p>
+<p>Se usó asistencia de IA para estructura, código, interpretaciones y redacción de este informe.
+El grupo verificó las cifras contra las salidas del notebook y declara poder responder por cada
+línea en la presentación. Detalle por tarea en la sección 7 del notebook.</p>
+
+</body></html>

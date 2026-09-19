@@ -1,0 +1,6 @@
+n,etapa,decision,registros_afectados,filas_antes,filas_despues,fundamento
+1,3.1 Tipos,Renombrado de columnas a nombres de trabajo legibles,16,,,"Los códigos crudos (P02, ED08, …) no son autoexplicativos; se documenta la equivalencia en el diccionario de datos."
+2,3.1 Tipos,"Mapeo de códigos numéricos a etiquetas legibles (zona, sexo, departamento, sector, motivo)",177661,,,Los códigos numéricos no son interpretables sin el diccionario oficial; se decodifican aquí una sola vez.
+3,3.2 Universo,Filtro a edad 12-17 años (universo declarado en Etapa 1.6),159103,177661.0,18558.0,"La pregunta de investigación está acotada a la edad teórica de 3.er ciclo y educación media; incluir otras edades mezclaría fenómenos distintos (deserción universitaria, alfabetización adulta, etc.)."
+4,3.3 Derivadas,Creación de «asiste_actualmente» / «no_asiste» a partir del código 19,18558,,,"ED08 trae 19 códigos de nivel/modalidad para quienes SÍ asisten; se colapsan a un indicador binario porque la pregunta de investigación es sobre inasistencia, no sobre en qué nivel están matriculados."
+5,3.4 Atípicos,Factores de expansión extremos CONSERVADOS,0,,,"Los pesos muestrales grandes son parte del diseño (representan estratos con menor tasa de muestreo); no son errores de carga y eliminarlos introduciría sesgo, no lo corregiría."
