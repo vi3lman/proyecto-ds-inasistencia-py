@@ -1,15 +1,15 @@
 campo,tipo_detectado,tipo_correcto,descripcion,unidad,n_unicos,rango_o_categorias,pct_faltantes
-anio_encuesta,int64,entero,"Año de la ronda EPHC (2022, 2023 o 2024)",año,3,"2022, 2023, 2024",0.0
-UPM,int64,entero,Unidad primaria de muestreo,código,1773,"[14.00 — 28,774.00]",0.0
-NVIVI,int64,entero,Número de vivienda dentro de la UPM,código,128,[1.00 — 975.00],0.0
+anio_encuesta,int64,entero,Año de la ronda EPHC (2022–2025),año,4,"2022, 2023, 2024, 2025",0.0
+UPM,int64,entero,Unidad primaria de muestreo,código,1817,"[14.00 — 28,774.00]",0.0
+NVIVI,int64,entero,Número de vivienda dentro de la UPM,código,138,[1.00 — 975.00],0.0
 NHOGA,int64,entero,Número de hogar dentro de la vivienda,código,3,"1, 2, 3",0.0
 L02,int64,entero,Número de línea / persona dentro del hogar,código,20,[1.00 — 25.00],0.0
-edad,int64,entero,Edad en años cumplidos (universo 12–17),años,6,"13, 12, 16, 17, 14, 15",0.0
+edad,int64,entero,Edad en años cumplidos (universo 12–17),años,6,"13, 12, 14, 16, 17, 15",0.0
 sexo,str,categórica nominal,Sexo declarado (Hombre / Mujer),categoría,2,"Hombre, Mujer",0.0
 zona,str,categórica nominal,Zona de residencia (Urbana / Rural),categoría,2,"Urbana, Rural",0.0
-departamento,str,categórica nominal,Departamento de residencia (16 dptos. relevados),categoría,16,"Central, Alto Paraná, Itapúa, San Pedro, Caaguazú, Caazapá … (+10)",0.0
-sector,str,categórica nominal,Sector de la institución a la que asiste; nulo si no asiste,categoría,4,"Oficial, Privado, Privado subvencionado, NR",8.36
+departamento,str,categórica nominal,Departamento de residencia (16 dptos. relevados),categoría,16,"Central, Alto Paraná, Itapúa, San Pedro, Caaguazú, Capital … (+10)",0.0
+sector,str,categórica nominal,Sector de la institución a la que asiste; nulo si no asiste,categoría,4,"Oficial, Privado, Privado subvencionado, NR",8.13
 asiste_actualmente,int64,binaria,1 si asiste a educación formal; 0 si no asiste (ED08 = 19),0/1,2,"1, 0",0.0
 no_asiste,int64,binaria,Variable objetivo: 1 = no asiste; 0 = asiste,0/1,2,"0, 1",0.0
-motivo_inasistencia,str,categórica nominal,Motivo declarado (ED10); nulo si asiste,categoría,17,"Sin recursos en el hogar, No quiere estudiar, Motivos familiares, Necesidad de trabajar, No existe institución cercana, Requiere educación especial … (+11)",91.62
-factor_expansion,float64,continuo,Factor de expansión (FEX.2022); pondera cada estadístico,personas,11114,[11.18 — 985.54],0.0
+motivo_inasistencia,str,categórica nominal,Motivo declarado (ED10); nulo si asiste,categoría,17,"Sin recursos en el hogar, No quiere estudiar, Motivos familiares, Necesidad de trabajar, No existe institución cercana, Requiere educación especial … (+11)",91.86
+factor_expansion,float64,continuo,Factor de expansión (FEX.2022 / FACTOR); pondera cada estadístico,personas,11476,[11.18 — 985.54],0.0

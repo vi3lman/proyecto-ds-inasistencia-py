@@ -1,4 +1,4 @@
-# Inasistencia escolar en la adolescencia paraguaya: magnitud, motivos declarados y brechas territoriales (2022–2024)
+# Inasistencia escolar en la adolescencia paraguaya: magnitud, motivos declarados y brechas territoriales (2022–2025)
 
 Proyecto Integrador de Ciencia de Datos — **Fase 1**: comprensión del problema, comprensión y selección de
 los datos, limpieza y transformación, análisis univariado y bivariado, análisis descriptivo y exploratorio.
@@ -13,7 +13,7 @@ los datos, limpieza y transformación, análisis univariado y bivariado, anális
 
 > ¿En qué medida la zona de residencia (urbana/rural) y el departamento se asocian con la tasa de
 > inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos declaran los hogares
-> para explicar esa inasistencia, entre 2022 y 2024?
+> para explicar esa inasistencia, entre 2022 y 2025?
 
 ## Por qué la fuente es la EPHC y no el MEC
 
@@ -31,7 +31,7 @@ de esta decisión está documentado en la sección "Nota metodológica" del note
 ```
 .
 ├── data/
-│   ├── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024}.csv, SIN modificar (no versionados)
+│   ├── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv, SIN modificar (no versionados)
 │   └── processed/      # dataset_fase1.parquet — generado por el notebook
 ├── notebooks/
 │   └── Fase1_DataScience_EPHC.ipynb
@@ -53,8 +53,9 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 1. Descargar los tres archivos REG02_EPHC_ANUAL_*.csv desde la DGEEC
+# 1. Descargar REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv (INE/DGEEC)
 #    y colocarlos SIN MODIFICAR en data/raw/
+#    En 2025 el peso se llama FACTOR (el notebook lo unifica con FEX.2022).
 # 2. Ejecutar el notebook completo
 jupyter nbconvert --to notebook --execute --inplace notebooks/Fase1_DataScience_EPHC.ipynb
 jupyter nbconvert --to html notebooks/Fase1_DataScience_EPHC.ipynb --output ../output/Fase1.html
@@ -64,7 +65,7 @@ El notebook se ejecuta de principio a fin sin intervención manual y regenera
 `data/processed/dataset_fase1.parquet` a partir de los archivos originales.
 
 > **Detalle de formato crítico:** los archivos EPHC usan `;` como separador de columnas y `,` como separador
-> **decimal**. Si se lee sin `decimal=','`, el factor de expansión (`FEX.2022`) se interpreta como texto y
+> **decimal**. Si se lee sin `decimal=','`, el factor de expansión (`FEX.2022` / `FACTOR`) se interpreta como texto y
 > cualquier suma posterior concatena strings en vez de sumar — sin ningún error visible. El notebook ya
 > aplica esta corrección; queda documentado para quien reutilice el código en otro contexto.
 
@@ -73,16 +74,16 @@ El notebook se ejecuta de principio a fin sin intervención manual y regenera
 | Ítem | Valor |
 |---|---|
 | Fuente | Dirección General de Estadística, Encuestas y Censos (DGEEC), Paraguay |
-| Encuesta | Encuesta Permanente de Hogares Continua (EPHC), rondas 2022, 2023 y 2024 |
-| Archivos | `REG02_EPHC_ANUAL_2022.csv`, `REG02_EPHC_ANUAL_2023.csv`, `REG02_EPHC_ANUAL_2024.csv` |
-| Diccionario de variables | `diccionario_EPHC_ANUAL_2023.xls`, hoja "EPHC 2023" |
+| Encuesta | Encuesta Permanente de Hogares Continua (EPHC), rondas 2022, 2023, 2024 y 2025 |
+| Archivos | `REG02_EPHC_ANUAL_2022.csv` … `REG02_EPHC_ANUAL_2025.csv` |
+| Diccionario de variables | `diccionario_EPHC_ANUAL_2023.xls` / `diccionario_EPHC_ANUAL_2025.xls` |
 | Unidad de análisis | persona dentro de un hogar, año de encuesta (corte transversal repetido, no panel) |
 | Licencia | Microdatos de uso público de la DGEEC |
 
 ## Limitación de cobertura verificada empíricamente
 
 Los departamentos de **Boquerón y Alto Paraguay** (región del Chaco) no aparecen en la muestra de la EPHC en
-ninguno de los tres años relevados. Es un límite sistemático de la fuente, verificado en la Etapa 2.6 del
+ninguno de los años relevados. Es un límite sistemático de la fuente, verificado en la Etapa 2.6 del
 notebook: ningún resultado de este proyecto puede extenderse a esa región.
 
 ## Reproducibilidad
