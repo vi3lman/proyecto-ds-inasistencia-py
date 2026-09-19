@@ -15,16 +15,6 @@ los datos, limpieza y transformación, análisis univariado y bivariado, anális
 > inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos declaran los hogares
 > para explicar esa inasistencia, entre 2022 y 2025?
 
-## Por qué la fuente es la EPHC y no el MEC
-
-La propuesta original de este proyecto apuntaba al abandono escolar usando registros administrativos del
-MEC. Al inventariar los archivos efectivamente disponibles se comprobó que **ningún dataset del MEC
-contiene una variable de abandono o deserción**. La
-**Encuesta Permanente de Hogares Continua (EPHC)** de la DGEEC, en cambio, pregunta directamente al hogar
-si el adolescente asiste y, si no, por qué — la variable que la propuesta original necesitaba. El costo de
-este cambio: la unidad de análisis pasa de *establecimiento* a *persona dentro de un hogar*, con diseño
-muestral complejo que exige ponderar por el factor de expansión (`FEX`) en todo cálculo. El detalle completo
-de esta decisión está documentado en la sección "Nota metodológica" del notebook.
 
 ## Estructura del repositorio
 
