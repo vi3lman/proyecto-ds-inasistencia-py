@@ -28,7 +28,7 @@ tr:nth-child(even) td { background: #f4f7fa; }
 <div class="cover">
   <div class="kicker">Proyecto Integrador de Ciencia de Datos — Informe de Fase 1</div>
   <h1>Inasistencia escolar en la adolescencia paraguaya</h1>
-  <p>Magnitud, motivos declarados y brechas territoriales · EPHC 2022–2024</p>
+  <p>Magnitud, motivos declarados y brechas territoriales · EPHC 2022–2025</p>
   <div class="meta">
     <p><strong>Integrantes:</strong> Matías Morínigo · César Vielman · Iván Paredes</p>
     <p>Asignatura: Data Science · Entrega: 15 de septiembre de 2026</p>
@@ -44,7 +44,7 @@ variable de abandono en los abiertos del MEC. El costo es metodológico: unidad 
 en un hogar, y todo estadístico descriptivo va ponderado por el factor de expansión (FEX).</p>
 <div class="box">¿En qué medida la zona de residencia (urbana/rural) y el departamento se asocian
 con la tasa de inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos
-declaran los hogares para explicar esa inasistencia, entre 2022 y 2024?</div>
+declaran los hogares para explicar esa inasistencia, entre 2022 y 2025?</div>
 <p><strong>Objetivo general:</strong> analizar esa asociación y caracterizar los motivos.
 En esta fase se cumplen OE1 (construir el panel) y OE2 (describir tasas y motivos). OE3 (contrastes)
 queda para Fase 2 y OE4 (clasificación de riesgo) para Fase 3.</p>
@@ -62,7 +62,8 @@ queda para Fase 2 y OE4 (clasificación de riesgo) para Fase 3.</p>
 <tr><td>Descarga</td><td>Iván Paredes · 12 de septiembre de 2026 · microdatos públicos DGEEC</td></tr>
 </table>
 <p>El único punto de fricción de calidad fue de formato: sin <code>decimal=','</code> el FEX se lee
-como texto y las “sumas” concatenan cadenas. Se verificó dtype float64 al cargar. Los blancos de
+como texto y las “sumas” concatenan cadenas. En 2025 el peso se llama <code>FACTOR</code> (a veces entero)
+y se unifica a <code>FEX.2022</code> al cargar. Los blancos de
 ED08/ED09/ED10 en el archivo crudo no son faltantes: son personas fuera del universo de la pregunta
 educativa; se resuelven al filtrar edad 12–17. Los pesos muestrales extremos se conservaron (son
 diseño, no error).</p>
@@ -98,7 +99,7 @@ en 2025. La brecha se achica porque baja el campo. En 2025 sigue más del doble.
 y 18,5 % a los 17 (en 2025: 0,7 % y 16,5 %). La escalera no se rompe.</p>
 
 <h3>4.4 Departamentos</h3>
-<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G4_barras_departamento.png" alt="Gráfico 4. Tasa de inasistencia por departamento (media nacional 7,8 %)."><div class="caption">Gráfico 4. Tasa de inasistencia por departamento (media nacional 7,8 %).</div></div>
+<div class="fig"><img src="file:///Users/ivanparedesozuna/Developer/proyecto-ds-inasistencia-py/output/figuras/G4_barras_departamento.png" alt="Gráfico 4. Tasa de inasistencia por departamento (media nacional 7,4 %)."><div class="caption">Gráfico 4. Tasa de inasistencia por departamento (media nacional 7,4 %).</div></div>
 <p><strong>G4.</strong> Pooled 2022–2025: Itapúa 11,9 %, San Pedro 11,8 %, Canindeyú 11,6 %;
 Capital 2,1 % (media 7,4 %). En <em>solo 2025</em> el máximo es Canindeyú (11,7 %) e Itapúa/San Pedro
 bajan a ~9 %. Ñeembucú pooled n = 618; en 2025 n = 153.</p>

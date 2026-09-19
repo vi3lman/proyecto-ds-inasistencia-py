@@ -29,10 +29,10 @@ tr:nth-child(even) td { background: #f4f7fa; }
   <div class="kicker">Proyecto Integrador de Ciencia de Datos — Fase 1</div>
   <h1>Comprensión del problema</h1>
   <p><strong>Inasistencia escolar en la adolescencia paraguaya:</strong><br>
-  magnitud, motivos declarados y brechas territoriales (2022–2024)</p>
+  magnitud, motivos declarados y brechas territoriales (2022–2025)</p>
   <div class="meta">
     <p>Matías Morínigo · César Vielman · Iván Paredes</p>
-    <p>Fuente: EPHC 2022–2024, DGEEC · Entrega: 15 de septiembre de 2026</p>
+    <p>Fuente: EPHC 2022–2025, INE/DGEEC · Entrega: 15 de septiembre de 2026</p>
   </div>
 </div>
 
@@ -64,17 +64,17 @@ de expansión (FEX) en todo cálculo descriptivo.</p>
 <h2>3. Pregunta de investigación</h2>
 <div class="box">¿En qué medida la zona de residencia (urbana/rural) y el departamento se asocian
 con la tasa de inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos
-declaran los hogares para explicar esa inasistencia, entre 2022 y 2024?</div>
+declaran los hogares para explicar esa inasistencia, entre 2022 y 2025?</div>
 <p>La pregunta se responde con evidencia oficial (no con opinión); está acotada en tiempo, edad y
 alcance; y admite respuesta negativa: podría no haber diferencia urbano/rural una vez controlado
 el departamento, o el ranking de motivos podría no variar entre zonas.</p>
 
 <h2>4. Objetivos</h2>
 <p><strong>General.</strong> Analizar la asociación entre zona, departamento y tasa de inasistencia
-de adolescentes de 12 a 17 años en Paraguay (2022–2024), caracterizando los motivos declarados.</p>
+de adolescentes de 12 a 17 años en Paraguay (2022–2025), caracterizando los motivos declarados.</p>
 <table>
 <tr><th>OE</th><th>Qué se hace</th><th>Fase</th></tr>
-<tr><td>OE1</td><td>Construir el panel 2022–2024 de personas 12–17 con asistencia, motivo, zona, departamento y FEX.</td><td>1</td></tr>
+<tr><td>OE1</td><td>Construir el panel 2022–2025 de personas 12–17 con asistencia, motivo, zona, departamento y FEX/FACTOR.</td><td>1</td></tr>
 <tr><td>OE2</td><td>Describir evolución de la tasa y de los motivos por zona, departamento y sexo.</td><td>1</td></tr>
 <tr><td>OE3</td><td>Contrastar si las diferencias de tasa y de motivo son estadísticamente sostenibles.</td><td>2</td></tr>
 <tr><td>OE4</td><td>Clasificar el riesgo de inasistencia a partir de zona, departamento, edad y sexo.</td><td>3</td></tr>
@@ -82,8 +82,9 @@ de adolescentes de 12 a 17 años en Paraguay (2022–2024), caracterizando los m
 </table>
 
 <h2>5. Alcance y límites que se declaran de antemano</h2>
-<p><strong>Dentro:</strong> miembros del hogar de 12 a 17 años; rondas 2022–2024; variables ED08,
-ED10, ED09, AREA, DPTO, P06, P02; todo descriptivo ponderado por FEX.2022.</p>
+<p><strong>Dentro:</strong> miembros del hogar de 12 a 17 años; rondas 2022–2025; variables ED08,
+ED10, ED09, AREA, DPTO, P06, P02; todo descriptivo ponderado por el factor de expansión
+(<code>FEX.2022</code> en 2022–2024; <code>FACTOR</code> en 2025, unificado al cargar).</p>
 <p><strong>Fuera:</strong> características del establecimiento (la EPHC no lo identifica);
 seguimiento de las mismas personas (es corte transversal repetido, no panel); inferencia causal;
 niveles fuera de 12–17 años.</p>
@@ -91,7 +92,7 @@ niveles fuera de 12–17 años.</p>
 <li>El FEX corrige estimaciones puntuales, no los errores estándar por conglomerados.</li>
 <li>Departamentos con submuestra chica tendrán más error (Ñeembucú, entre otros).</li>
 <li>El motivo es autorreportado por el hogar.</li>
-<li>Boquerón y Alto Paraguay no están en la muestra de ninguno de los tres años: nada de este
+<li>Boquerón y Alto Paraguay no están en la muestra de ninguno de los cuatro años: nada de este
 trabajo se extiende al Chaco central/norte.</li>
 </ol>
 <p class="small">Documento de comprensión del problema (2–3 pp.). Complementa el notebook
