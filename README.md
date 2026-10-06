@@ -1,11 +1,10 @@
 # Inasistencia escolar en la adolescencia paraguaya: magnitud, motivos declarados y brechas territoriales (2022–2025)
 
-Proyecto Integrador de Ciencia de Datos — **Fase 1**: comprensión del problema, comprensión y selección de
-los datos, limpieza y transformación, análisis univariado y bivariado, análisis descriptivo y exploratorio.
+Proyecto Integrador de Ciencia de Datos — **Fase 1** (descriptivo) y **Fase 2** (inferencial).
 
 **Integrantes:** Matías Morínigo · César Vielman · Iván Paredes
 
-**Entrega Fase 1:** `output/Informe_Fase1.pdf` · `output/fase1_comprension_problema.pdf` · notebook ejecutado.
+**Entrega Fase 2:** `output/Informe_Fase2.pdf` · `notebooks/Fase2_DataScience_EPHC.ipynb` · `output/Fase2.html` · `output/tablas/fase2_resumen_contrastes.csv`
 
 ---
 
@@ -15,29 +14,33 @@ los datos, limpieza y transformación, análisis univariado y bivariado, anális
 > inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos declaran los hogares
 > para explicar esa inasistencia, entre 2022 y 2025?
 
-<<<<<<< Updated upstream
-=======
 ## Por qué la fuente es la EPHC
 
 El proyecto mide la inasistencia escolar actual de adolescentes de 12 a 17 años y los motivos que declara
 el hogar. La **Encuesta Permanente de Hogares Continua (EPHC)** de la DGEEC pregunta cada año si la persona
 asiste (ED08) y, si no, por qué (ED10). La unidad de análisis es la *persona dentro de un hogar*; el diseño
-muestral exige ponderar por el factor de expansión (`FEX`) en todo cálculo descriptivo.
->>>>>>> Stashed changes
+muestral exige ponderar por el factor de expansión (`FEX`) en todo cálculo descriptivo. La inferencia de la
+Fase 2 se realiza sobre el *n* muestral (sin pesos de replicación).
 
 ## Estructura del repositorio
 
 ```
 .
 ├── data/
-│   └── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv, SIN modificar (no versionados)
+│   └── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv (no versionados)
 ├── notebooks/
-│   └── Fase1_DataScience_EPHC.ipynb
-├── src/                # funciones reutilizables extraídas del notebook (Fases 2 y 3)
+│   ├── Fase1_DataScience_EPHC.ipynb
+│   └── Fase2_DataScience_EPHC.ipynb
+├── src/
+│   └── fase2_helpers.py
+├── scripts/
+│   └── build_fase2.py  # regenera tablas, figuras, notebook e informe de Fase 2
 ├── output/
-│   ├── dataset_fase1.parquet  # dataset limpio (Etapa 3)
-│   ├── figuras/        # G1…G8 en .png
-│   └── tablas/         # diccionarios de datos, bitácora de limpieza, series
+│   ├── dataset_fase1.parquet
+│   ├── Informe_Fase2.pdf / .html
+│   ├── Fase2.html
+│   ├── figuras/        # G1…G8 (Fase 1) y F2_* (Fase 2)
+│   └── tablas/         # diccionarios, bitácora, fase2_resumen_contrastes.csv
 ├── requirements.txt
 └── README.md
 ```
@@ -52,45 +55,42 @@ python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-# 1. Descargar REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv (INE/DGEEC)
-#    y colocarlos SIN MODIFICAR en data/raw/
-#    En 2025 el peso se llama FACTOR (el notebook lo unifica con FEX.2022).
-# 2. Ejecutar el notebook completo
+# Datos: REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv en data/raw/
+# (en 2025 el peso se llama FACTOR; el notebook lo unifica con FEX.2022)
+
+# Fase 1
 jupyter nbconvert --to notebook --execute --inplace notebooks/Fase1_DataScience_EPHC.ipynb
 jupyter nbconvert --to html notebooks/Fase1_DataScience_EPHC.ipynb --output ../output/Fase1.html
+
+# Fase 2 (requiere output/dataset_fase1.parquet)
+python scripts/build_fase2.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/Fase2_DataScience_EPHC.ipynb
+jupyter nbconvert --to html notebooks/Fase2_DataScience_EPHC.ipynb --output-dir output --output Fase2.html
 ```
 
-El notebook se ejecuta de principio a fin sin intervención manual y regenera
-`output/dataset_fase1.parquet` a partir de los archivos originales.
-
 > **Detalle de formato crítico:** los archivos EPHC usan `;` como separador de columnas y `,` como separador
-> **decimal**. Si se lee sin `decimal=','`, el factor de expansión (`FEX.2022` / `FACTOR`) se interpreta como texto y
-> cualquier suma posterior concatena strings en vez de sumar — sin ningún error visible. El notebook ya
-> aplica esta corrección; queda documentado para quien reutilice el código en otro contexto.
+> **decimal**. Si se lee sin `decimal=','`, el factor de expansión se interpreta como texto.
 
 ## Fuente de datos
 
 | Ítem | Valor |
 |---|---|
 | Fuente | Dirección General de Estadística, Encuestas y Censos (DGEEC), Paraguay |
-| Encuesta | Encuesta Permanente de Hogares Continua (EPHC), rondas 2022, 2023, 2024 y 2025 |
+| Encuesta | Encuesta Permanente de Hogares Continua (EPHC), rondas 2022–2025 |
 | Archivos | `REG02_EPHC_ANUAL_2022.csv` … `REG02_EPHC_ANUAL_2025.csv` |
-| Diccionario de variables | `diccionario_EPHC_ANUAL_2023.xls` / `diccionario_EPHC_ANUAL_2025.xls` |
-| Unidad de análisis | persona dentro de un hogar, año de encuesta (corte transversal repetido, no panel) |
+| Unidad de análisis | persona dentro de un hogar, año de encuesta |
 | Licencia | Microdatos de uso público de la DGEEC |
 
-## Limitación de cobertura verificada empíricamente
+## Limitación de cobertura
 
-Los departamentos de **Boquerón y Alto Paraguay** (región del Chaco) no aparecen en la muestra de la EPHC en
-ninguno de los años relevados. Es un límite sistemático de la fuente, verificado en la Etapa 2.6 del
-notebook: ningún resultado de este proyecto puede extenderse a esa región.
+Los departamentos de **Boquerón y Alto Paraguay** no aparecen en la muestra EPHC de los años relevados.
+Ningún resultado se extiende a esa región.
 
 ## Reproducibilidad
 
-- Rutas relativas en todo el código.
-- Semilla aleatoria fijada (`SEMILLA = 42`).
-- Todas las decisiones de limpieza quedan en `output/tablas/bitacora_limpieza.csv`.
-- Todo estadístico descriptivo está ponderado por el factor de expansión muestral (`factor_expansion`).
+- Rutas relativas; semilla `SEMILLA = 42`.
+- Fase 1: descriptivos ponderados por `factor_expansion`.
+- Fase 2: α = 0.05 a priori; BH sobre H1–H4 y H6; IC bootstrap de la diferencia rural−urbana; helpers en `src/fase2_helpers.py`.
 
 ## Calendario
 
