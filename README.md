@@ -15,18 +15,27 @@ los datos, limpieza y transformación, análisis univariado y bivariado, anális
 > inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué motivos declaran los hogares
 > para explicar esa inasistencia, entre 2022 y 2025?
 
+<<<<<<< Updated upstream
+=======
+## Por qué la fuente es la EPHC
+
+El proyecto mide la inasistencia escolar actual de adolescentes de 12 a 17 años y los motivos que declara
+el hogar. La **Encuesta Permanente de Hogares Continua (EPHC)** de la DGEEC pregunta cada año si la persona
+asiste (ED08) y, si no, por qué (ED10). La unidad de análisis es la *persona dentro de un hogar*; el diseño
+muestral exige ponderar por el factor de expansión (`FEX`) en todo cálculo descriptivo.
+>>>>>>> Stashed changes
 
 ## Estructura del repositorio
 
 ```
 .
 ├── data/
-│   ├── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv, SIN modificar (no versionados)
-│   └── processed/      # dataset_fase1.parquet — generado por el notebook
+│   └── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv, SIN modificar (no versionados)
 ├── notebooks/
 │   └── Fase1_DataScience_EPHC.ipynb
 ├── src/                # funciones reutilizables extraídas del notebook (Fases 2 y 3)
 ├── output/
+│   ├── dataset_fase1.parquet  # dataset limpio (Etapa 3)
 │   ├── figuras/        # G1…G8 en .png
 │   └── tablas/         # diccionarios de datos, bitácora de limpieza, series
 ├── requirements.txt
@@ -52,7 +61,7 @@ jupyter nbconvert --to html notebooks/Fase1_DataScience_EPHC.ipynb --output ../o
 ```
 
 El notebook se ejecuta de principio a fin sin intervención manual y regenera
-`data/processed/dataset_fase1.parquet` a partir de los archivos originales.
+`output/dataset_fase1.parquet` a partir de los archivos originales.
 
 > **Detalle de formato crítico:** los archivos EPHC usan `;` como separador de columnas y `,` como separador
 > **decimal**. Si se lee sin `decimal=','`, el factor de expansión (`FEX.2022` / `FACTOR`) se interpreta como texto y

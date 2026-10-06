@@ -6,3 +6,14 @@ data/processed/*
 __pycache__/
 *.pyc
 .venv/
+
+# Entrega local (no versionar)
+entregable/
+
+# Productos generados (figuras, PDFs, HTML, parquet)
+output/**
+!output/.gitkeep
+!output/figuras/
+!output/figuras/.gitkeep
+!output/tablas/
+!output/tablas/.gitkeep

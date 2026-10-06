@@ -1,4 +1,4 @@
-campo,tipo_detectado,tipo_correcto,descripcion,unidad,n_unicos,rango_o_categorias,pct_faltantes
+﻿campo,tipo_detectado,tipo_correcto,descripción,unidad,n_únicos,rango_o_categorías,pct_faltantes
 anio_encuesta,int64,entero,Año de la ronda EPHC (2022–2025),año,4,"2022, 2023, 2024, 2025",0.0
 UPM,int64,entero,Unidad primaria de muestreo,código,1817,"[14.00 — 28,774.00]",0.0
 NVIVI,int64,entero,Número de vivienda dentro de la UPM,código,138,[1.00 — 975.00],0.0

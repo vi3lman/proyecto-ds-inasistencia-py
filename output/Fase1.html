@@ -7838,6 +7838,16 @@ a.anchor-link {
 </tbody>
 </table>
 <hr/>
+<<<<<<< Updated upstream:output/Fase1.html
+=======
+<h2 id="Por-qu%C3%A9-la-fuente-es-la-EPHC">Por qué la fuente es la EPHC<a class="anchor-link" href="#Por-qu%C3%A9-la-fuente-es-la-EPHC">¶</a></h2><p>El proyecto estudia la <strong>inasistencia escolar actual</strong> de adolescentes de 12 a 17 años y los <strong>motivos
+que declara el hogar</strong>. La Encuesta Permanente de Hogares Continua (EPHC) de la DGEEC pregunta cada año,
+con metodología estable, si la persona asiste (<strong>ED08</strong>) y, si no, por qué (<strong>ED10</strong>: <em>"¿Por qué no asiste
+o dejó de asistir?"</em>). Esa es la información que permite distinguir causas económicas, de oferta, familiares
+o de interés personal.</p>
+<p>La unidad de análisis es la <strong>persona dentro de un hogar</strong>. El diseño muestral de la encuesta exige usar el
+factor de expansión (<code>FEX</code>) en todo cálculo descriptivo.</p>
+>>>>>>> Stashed changes:output/Fase1_resultados.html
 </div>
 </div>
 </div>
@@ -7850,7 +7860,7 @@ a.anchor-link {
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h3 id="C%C3%B3mo-usar-este-notebook">Cómo usar este notebook<a class="anchor-link" href="#C%C3%B3mo-usar-este-notebook">¶</a></h3><ol>
 <li>Los CSV (<code>REG02_EPHC_ANUAL_2022.csv</code> … <code>_2025.csv</code>) van en <code>data/raw/</code>, sin modificar.</li>
-<li><code>Kernel → Restart &amp; Run All</code>. El notebook corre de principio a fin y regenera <code>data/processed/dataset_fase1.parquet</code>.</li>
+<li><code>Kernel → Restart &amp; Run All</code>. El notebook corre de principio a fin y regenera <code>output/dataset_fase1.parquet</code>.</li>
 <li>Debajo de cada gráfico (G1–G8) está la lectura que hicimos de ese resultado.</li>
 <li>Ninguna transformación se hace a mano. Todo queda documentado en la bitácora de limpieza (Etapa 3.6).</li>
 </ol>
@@ -7898,7 +7908,7 @@ a.anchor-link {
 
 <span class="n">RAIZ</span>     <span class="o">=</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span> <span class="k">if</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="s1">'notebooks'</span> <span class="k">else</span> <span class="n">Path</span><span class="o">.</span><span class="n">cwd</span><span class="p">()</span>
 <span class="n">DIR_RAW</span>  <span class="o">=</span> <span class="n">RAIZ</span> <span class="o">/</span> <span class="s1">'data'</span> <span class="o">/</span> <span class="s1">'raw'</span>
-<span class="n">DIR_PROC</span> <span class="o">=</span> <span class="n">RAIZ</span> <span class="o">/</span> <span class="s1">'data'</span> <span class="o">/</span> <span class="s1">'processed'</span>
+<span class="n">DIR_PROC</span> <span class="o">=</span> <span class="n">RAIZ</span> <span class="o">/</span> <span class="s1">'output'</span>
 <span class="n">DIR_FIG</span>  <span class="o">=</span> <span class="n">RAIZ</span> <span class="o">/</span> <span class="s1">'output'</span> <span class="o">/</span> <span class="s1">'figuras'</span>
 <span class="n">DIR_TAB</span>  <span class="o">=</span> <span class="n">RAIZ</span> <span class="o">/</span> <span class="s1">'output'</span> <span class="o">/</span> <span class="s1">'tablas'</span>
 <span class="k">for</span> <span class="n">_d</span> <span class="ow">in</span> <span class="p">(</span><span class="n">DIR_RAW</span><span class="p">,</span> <span class="n">DIR_PROC</span><span class="p">,</span> <span class="n">DIR_FIG</span><span class="p">,</span> <span class="n">DIR_TAB</span><span class="p">):</span>
@@ -8049,13 +8059,10 @@ releva, entre otras dimensiones, la situación educativa de cada miembro del hog
 una institución de enseñanza formal, a qué nivel, en qué sector, y —si no asiste o dejó de asistir— <strong>por
 qué</strong>. La encuesta usa un diseño muestral complejo con unidades primarias de muestreo (UPM) y un factor de
 expansión (<code>FEX</code>) que permite generalizar los resultados de la muestra a la población total del país.</p>
-<p>La <strong>decisión real en juego</strong> es la misma que motivó la propuesta original del proyecto: cómo priorizar la
-inversión y las políticas de retención escolar. La diferencia es la fuente: en vez de partir del registro
-administrativo de establecimientos del MEC, este proyecto parte de la <strong>voz del hogar</strong>, que declara
-directamente por qué un adolescente no está en la escuela. Esa información no la tiene el MEC —un
-establecimiento no puede reportar por qué un chico que nunca llegó a inscribirse dejó de estudiar— y es
-exactamente la que permite distinguir entre causas económicas, familiares, de oferta educativa o de interés
-personal.</p>
+<p>La <strong>decisión real en juego</strong> es cómo priorizar las políticas de retención escolar en el tramo 12–17.
+Este proyecto parte de la <strong>voz del hogar</strong>, que declara si el adolescente asiste y por qué no. Un
+establecimiento no puede reportar el motivo de quien nunca llegó a inscribirse; la EPHC sí, y eso permite
+distinguir causas económicas, familiares, de oferta educativa o de interés personal.</p>
 <p>Los usuarios potenciales del análisis son el MEC (para políticas de retención), el Ministerio de Desarrollo
 Social (para programas de transferencias condicionadas), las gobernaciones y organizaciones que monitorean
 la equidad educativa territorial.</p>
@@ -8075,7 +8082,7 @@ inasistencia escolar de los adolescentes de 12 a 17 años en Paraguay, y qué mo
 para explicar esa inasistencia, entre 2022 y 2025?</strong></p>
 </blockquote>
 <p>La pregunta cumple los tres criterios exigidos: se responde con <strong>evidencia</strong> (la EPHC, encuesta oficial de
-la DGEEC) y no con opinión; está <strong>acotada</strong> en tiempo (2022–2025, los cuatro años con archivo disponible),
+la DGEEC) y no con opinión; está <strong>acotada</strong> en tiempo (2022–2025),
 en edad (12 a 17 años, edad teórica de 3.er ciclo y educación media) y en alcance (zona, departamento y
 motivo declarado); y <strong>admite respuesta negativa</strong>: es posible que, controlando por departamento, la
 diferencia urbano/rural no resulte relevante, o que el motivo principal de inasistencia no varíe entre
@@ -8180,7 +8187,7 @@ urbano/rural se mantiene, se amplía o se reduce en el período reciente —algo
 <h2 id="1.6.-Alcance-y-limitaciones-previstas">1.6. Alcance y limitaciones previstas<a class="anchor-link" href="#1.6.-Alcance-y-limitaciones-previstas">¶</a></h2><p><strong>Dentro del alcance</strong></p>
 <ul>
 <li>Personas de <strong>12 a 17 años</strong> registradas en el hogar (<code>P04</code> = miembro del hogar).</li>
-<li>Período <strong>2022–2025</strong> (los cuatro años con archivo disponible).</li>
+<li>Período <strong>2022–2025</strong>.</li>
 <li>Variables de <strong>asistencia actual</strong> (<code>ED08</code>), <strong>motivo de inasistencia</strong> (<code>ED10</code>), <strong>sector</strong> (<code>ED09</code>),
 <strong>zona</strong> (<code>AREA</code>), <strong>departamento</strong> (<code>DPTO</code>), <strong>sexo</strong> (<code>P06</code>) y <strong>edad</strong> (<code>P02</code>).</li>
 <li>Todo estadístico descriptivo se calcula <strong>ponderado por el factor de expansión</strong> (<code>FEX.2022</code>), como exige
@@ -8189,8 +8196,8 @@ el diseño muestral de la encuesta.</li>
 <p><strong>Explícitamente fuera</strong></p>
 <ul>
 <li><strong>Características del establecimiento</strong> (infraestructura, servicios básicos, planta docente): la EPHC no
-identifica el establecimiento al que asiste o asistía la persona; esa información seguiría el registro
-administrativo del MEC. No se fuerza un cruce que la propia estructura de los datos no permite.</li>
+identifica el colegio al que asiste o asistía la persona. No se fuerza un cruce que la propia estructura
+de los datos no permite.</li>
 <li><strong>Seguimiento de cohorte.</strong> La EPHC es una encuesta de <strong>corte transversal repetido</strong>, no un panel: no se
 entrevista a los mismos hogares cada año. "2022–2025" describe cuatro fotografías comparables, no la
 trayectoria de las mismas personas en el tiempo.</li>
@@ -8209,7 +8216,7 @@ de la materia). Los intervalos de confianza de la Fase 2 deben leerse con esa sa
 explícitamente.</li>
 <li><strong>El motivo de inasistencia es autorreportado</strong> por el hogar, no verificado independientemente.</li>
 <li><strong>Cobertura territorial incompleta en el Chaco.</strong> Se verifica empíricamente en la Etapa 2.6 si Boquerón
-y Alto Paraguay están representados en la muestra de los tres años; si no lo están, los resultados de
+y Alto Paraguay están representados en la muestra de los cuatro años; si no lo están, los resultados de
 este proyecto no podrán extenderse a esa región y así se declarará en la conclusión.</li>
 </ol>
 </div>
@@ -9279,7 +9286,7 @@ Name: count, dtype: int64
 zona y departamento; los códigos en blanco de <code>ED08</code>/<code>ED09</code>/<code>ED10</code> no son datos faltantes en sentido
 estricto, sino personas <strong>fuera del universo de la pregunta</strong> (por ejemplo, adultos a quienes no corresponde
 preguntarles si asisten a educación media). Ese universo se delimita en la Etapa 3 filtrando por edad.</p>
-<p><strong>Consistencia.</strong> La estructura de columnas es idéntica en los tres años, lo que evita el problema típico
+<p><strong>Consistencia.</strong> La estructura de columnas es idéntica en los cuatro años, lo que evita el problema típico
 de fuentes administrativas (nombres de campo que cambian entre períodos). El punto de fricción real fue de
 <strong>formato</strong>: el separador decimal en coma exige <code>decimal=','</code> al leer, verificado en la Etapa 2.2.</p>
 <p><strong>Exactitud aparente.</strong> La suma del factor de expansión por año debe aproximarse a la población total de
@@ -10038,7 +10045,11 @@ Verificación: tasa nacional de inasistencia (12-17), ponderada, por año de enc
 <pre>Filas iniciales (todas las edades): 233,595
 Filas finales (universo 12-17 años)          : 24,316
 Población representada (ponderada)           : 2,460,607
+<<<<<<< Updated upstream:output/Fase1.html
 Dataset limpio guardado en: data\processed\dataset_fase1.parquet
+=======
+Dataset limpio guardado en: output/dataset_fase1.parquet
+>>>>>>> Stashed changes:output/Fase1_resultados.html
 </pre>
 </div>
 </div>
@@ -11118,7 +11129,11 @@ real de la población.</p>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">'Distribución de edad según condición de asistencia'</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">''</span><span class="p">);</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">'Edad (años)'</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">DIR_FIG</span> <span class="o">/</span> <span class="s1">'03_edad_por_asistencia.png'</span><span class="p">);</span> <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<<<<<<< Updated upstream:output/Fase1.html
 <span class="nb">print</span><span class="p">(</span><span class="s1">'Los que no asisten son más grandes (15,8 vs 14,4). 1,1 </span><span class="si">% a</span><span class="s1"> los 12 y 18,5 </span><span class="si">% a</span><span class="s1"> los 17; en 2025, 0,7 % y 16,5 %. La escalera se mantiene.'</span><span class="p">)</span>
+=======
+<span class="nb">print</span><span class="p">(</span><span class="s1">'Los que no asisten son más grandes (15,8 vs 14,4). En 2022–2025: 1,1 </span><span class="si">% a</span><span class="s1"> los 12 y 18,5 </span><span class="si">% a</span><span class="s1"> los 17; en 2025, 0,7 % y 16,5 %. La escalera se mantiene.'</span><span class="p">)</span>
+>>>>>>> Stashed changes:output/Fase1_resultados.html
 </pre></div>
 </div>
 </div>
@@ -11814,7 +11829,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <blockquote>
-<p>En los cuatro años la rural queda arriba: 12,8 % vs 5,2 % en 2022, y 10,4 % vs 4,4 % en 2025. La brecha se achica (7,6 → ~6 puntos) porque baja el campo, no porque suba la ciudad. En 2025 sigue siendo más del doble. Sumar 2025 no da vuelta el patrón; lo que hace es confirmar que la caída rural continúa.</p>
+<p>En los cuatro años la rural queda arriba: 12,8 % vs 5,2 % en 2022, y 10,4 % vs 4,4 % en 2025. La brecha se achica (7,6 → ~6 puntos) porque baja el campo, no porque suba la ciudad. En 2025 sigue siendo más del doble.</p>
 </blockquote>
 </div>
 </div>
@@ -11911,7 +11926,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <blockquote>
-<p>Los que no asisten son más grandes (media 15,8 vs 14,4). En el pooled 2022–2025 la tasa va de 1,1 % a los 12 a 18,5 % a los 17 (en 2025 esos extremos son 0,7 % y 16,5 %, más bajos, pero la escalera es la misma). El problema se ve al final del rango, cuando toca media.</p>
+<p>Los que no asisten son más grandes (media 15,8 vs 14,4). En 2022–2025 la tasa va de 1,1 % a los 12 a 18,5 % a los 17 (en 2025 esos extremos son 0,7 % y 16,5 %, más bajos, pero la escalera es la misma). El problema se ve al final del rango, cuando toca media.</p>
 </blockquote>
 </div>
 </div>
@@ -12097,7 +12112,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <blockquote>
-<p>En el pooled 2022–2025 los más altos son Itapúa (11,9 %), San Pedro (11,8 %) y Canindeyú (11,6 %). Capital sigue último (2,1 %), con n = 1.451. El promedio del país baja a 7,4 %. Ojo con el recorte 2025 solo: ese año el máximo es Canindeyú (11,7 %) e Itapúa/San Pedro caen a ~9 %; Misiones y Paraguarí suben. El ranking del pooled no es una foto de 2025. El n más chico sigue siendo Ñeembucú (618 en el pooled; 153 en 2025: ese año no hay que leerlo fino).</p>
+<p>En 2022–2025 los más altos son Itapúa (11,9 %), San Pedro (11,8 %) y Canindeyú (11,6 %). Capital sigue último (2,1 %), con n = 1.451. El promedio del país es 7,4 %. En 2025 el máximo es Canindeyú (11,7 %) e Itapúa/San Pedro caen a ~9 %; Misiones y Paraguarí suben. El ranking del período no es idéntico al de un solo año. El n más chico es Ñeembucú (618 en 2022–2025; 153 en 2025: ese año no hay que leerlo fino).</p>
 </blockquote>
 </div>
 </div>
@@ -12143,7 +12158,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <blockquote>
-<p>En el pooled, “sin recursos” sigue primero en las dos zonas, pero ya no empatados: 26,9 % rural vs 22,9 % urbana. “No hay institución cerca” sigue siendo del campo (10,6 % vs 0,6 %). En la ciudad pesan más “no quiere estudiar” (26,4 % vs 21,1 %).</p>
+<p>En 2022–2025, “sin recursos” sigue primero en las dos zonas, pero ya no empatados: 26,9 % rural vs 22,9 % urbana. “No hay institución cerca” sigue siendo del campo (10,6 % vs 0,6 %). En la ciudad pesan más “no quiere estudiar” (26,4 % vs 21,1 %).</p>
 <p>2025 mueve esto. Ese año, en el país gana “no quiere estudiar” (27,1 %) y “sin recursos” cae a 16,9 %. En urbana 2025 “sin recursos” queda en 9,7 % y “no quiere estudiar” en 30 %; “no hay institución cerca” en ciudad es 0 %. La idea que se lleva a Fase 2 ya no es “el motivo económico es igual en los dos lados”, sino: la oferta chica es rural; el mix plata vs no querer seguir <strong>cambia con el año y con la zona</strong>.</p>
 </blockquote>
 </div>
@@ -12192,7 +12207,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <blockquote>
 <p>En 2022–2025 juntos, tres respuestas se llevan ~69 %: sin recursos (25,3 %), no quiere estudiar (23,2 %) y familia (20,4 %). Trabajar 10,2 %; no hay institución cerca 6,6 %.</p>
-<p>Eso es el pooled. En 2025 el orden no es el mismo: primero no quiere estudiar (27,1 %), después familia (20,7 %) y recién tercero sin recursos (16,9 %). No se puede hablar de “el” motivo nacional sin decir de qué años. Para política: transferencias siguen importando, pero 2025 avisa que motivación/permanencia ganó peso, sobre todo en ciudad.</p>
+<p>En 2025 el orden no es el mismo: primero no quiere estudiar (27,1 %), después familia (20,7 %) y recién tercero sin recursos (16,9 %). No se puede hablar de “el” motivo nacional sin decir de qué años. Para política: transferencias siguen importando, y en 2025 motivación/permanencia gana peso, sobre todo en ciudad.</p>
 </blockquote>
 </div>
 </div>
@@ -12285,7 +12300,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <blockquote>
-<p>En el pooled, Itapúa y San Pedro están altos con n grande (2.144 y 1.699). Central tiene el n más grande (3.779) y tasa baja (4,3 %). Ñeembucú queda en 618 casos (4,5 %). Lo nuevo: el máximo de <em>2025</em> (Canindeyú) no es un departamento minúsculo (n = 314 ese año; 1.367 en el pooled). En Fase 2 no tiramos Itapúa/San Pedro ni Canindeyú como ruido; sí Ñeembucú 2025 (n = 153).</p>
+<p>En 2022–2025, Itapúa y San Pedro están altos con n grande (2.144 y 1.699). Central tiene el n más grande (3.779) y tasa baja (4,3 %). Ñeembucú queda en 618 casos (4,5 %). El máximo de 2025 (Canindeyú) no es un departamento minúsculo (n = 314 ese año; 1.367 en 2022–2025). En Fase 2 no tiramos Itapúa/San Pedro ni Canindeyú como ruido; sí Ñeembucú 2025 (n = 153).</p>
 </blockquote>
 </div>
 </div>
@@ -12309,33 +12324,33 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <tbody>
 <tr>
 <td style="text-align:center"><strong>P1</strong></td>
-<td>Rural más que duplica a urbana los cuatro años (pooled 11,4 % vs 4,9 %; 2025: 10,4 % vs 4,4 %). La brecha se achica, no se cierra.</td>
+<td>Rural más que duplica a urbana los cuatro años (11,4 % vs 4,9 % en 2022–2025; 10,4 % vs 4,4 % en 2025). La brecha se achica, no se cierra.</td>
 <td>G1</td>
-<td>H1 se mantiene.</td>
+<td>H1.</td>
 </tr>
 <tr>
 <td style="text-align:center"><strong>P2</strong></td>
 <td>A los 12 años ~1,1 %; a los 17 ~18,5 % (en 2025: 0,7 % y 16,5 %). La escalera por edad no se rompe.</td>
 <td>G3</td>
-<td>H4 se mantiene.</td>
+<td>H4.</td>
 </tr>
 <tr>
 <td style="text-align:center"><strong>P3</strong></td>
-<td>En el pooled, recursos / no quiere / familia ~69 %. En 2025 el 1.° pasa a ser “no quiere estudiar” (27 %) y “sin recursos” cae a 17 %. “No hay institución cerca” sigue casi solo rural.</td>
+<td>En 2022–2025, recursos / no quiere / familia ~69 %. En 2025 el 1.° pasa a ser “no quiere estudiar” (27 %) y “sin recursos” cae a 17 %. “No hay institución cerca” sigue casi solo rural.</td>
 <td>G5, G6</td>
-<td>H2 se mantiene (zona × motivo). Hay que testear también si el mix de motivos cambió en 2025 (H6).</td>
+<td>H2 (zona × motivo). H6: el mix de motivos de 2025 vs el de 2022–2024.</td>
 </tr>
 <tr>
 <td style="text-align:center"><strong>P4</strong></td>
-<td>Pooled: Itapúa, San Pedro y Canindeyú ~11,6–11,9 %; Capital 2,1 %. En 2025 el máximo es Canindeyú; Itapúa/San Pedro bajan.</td>
+<td>En 2022–2025: Itapúa, San Pedro y Canindeyú ~11,6–11,9 %; Capital 2,1 %. En 2025 el máximo es Canindeyú; Itapúa/San Pedro bajan.</td>
 <td>G4, G8</td>
-<td>H3 se mantiene. No tratar el ranking 2022–24 como si fuera 2025.</td>
+<td>H3. El ranking del período no es idéntico al de 2025.</td>
 </tr>
 <tr>
 <td style="text-align:center"><strong>A1</strong></td>
-<td>Ñeembucú pooled n = 618; en 2025 n = 153. Boquerón y Alto Paraguay siguen sin aparecer.</td>
+<td>Ñeembucú n = 618 en 2022–2025; en 2025 n = 153. Boquerón y Alto Paraguay no aparecen.</td>
 <td>G8; Etapa 2.6</td>
-<td>Más duda en Ñeembucú. El Chaco sigue fuera.</td>
+<td>Más duda en Ñeembucú. El Chaco queda fuera.</td>
 </tr>
 </tbody>
 </table>
@@ -12350,7 +12365,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="5.3.-Hip%C3%B3tesis-preliminares-para-la-Fase-2">5.3. Hipótesis preliminares para la Fase 2<a class="anchor-link" href="#5.3.-Hip%C3%B3tesis-preliminares-para-la-Fase-2">¶</a></h2><blockquote>
-<p>Cada hipótesis sale de lo observado arriba, ahora con 2022–2025. La dirección de H1–H5 <strong>no cambió</strong> al sumar 2025; lo que sí cambió es el mix de motivos y el ranking departamental de un año. Por eso se agrega H6.</p>
+<p>Cada hipótesis sale de lo observado en 2022–2025. H1–H5 cubren zona, motivo, departamento y edad. H6 cubre que el mix de motivos de 2025 no es el mismo que el de 2022–2024.</p>
 </blockquote>
 <table>
 <thead>
@@ -12415,7 +12430,7 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 </tbody>
 </table>
 <p><strong>Cobertura de familias:</strong> H1 (dos proporciones) · H2 y H6 (asociación categórica) · H3 (tres o más grupos) · H4 (ordinal) · H5 (regresión múltiple) → más de tres familias, como pide el enunciado.</p>
-<p><strong>Qué 2025 no cambió:</strong> H1, H4 y la ausencia del Chaco. <strong>Qué 2025 sí obliga a mirar aparte:</strong> H6 (motivos) y el detalle de H3 (Canindeyú vs Itapúa/San Pedro según se poolée o se corte el último año).</p>
+<p>H1 y H4 se sostienen en todo el período, y el Chaco no entra en la muestra. H6 y el detalle de H3 miran si 2025 se parece o no al conjunto 2022–2025 (Canindeyú vs Itapúa/San Pedro).</p>
 <p><strong>Previsiones para la Fase 2</strong></p>
 <ul>
 <li>α = 0,05, declarado <strong>antes</strong> de correr las pruebas.</li>
@@ -12435,20 +12450,20 @@ oraciones inmediatamente debajo</strong>. Todas las cifras están ponderadas por
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <hr/>
 <h1 id="6.-Conclusi%C3%B3n-de-la-Fase-1">6. Conclusión de la Fase 1<a class="anchor-link" href="#6.-Conclusi%C3%B3n-de-la-Fase-1">¶</a></h1><h3 id="6.1.-Principales-resultados-obtenidos">6.1. Principales resultados obtenidos<a class="anchor-link" href="#6.1.-Principales-resultados-obtenidos">¶</a></h3><p>El panel son 24.316 personas de 12 a 17 años en las EPHC 2022–2025 (unas 2,46 millones ponderadas). La tasa nacional es 7,4 % y sigue bajando: 8,5 % (2022) → 7,4 % (2024) → 6,3 % (2025).</p>
-<p>La brecha de zona no se da vuelta. Pooled: 11,4 % rural vs 4,9 % urbana. En 2025: 10,4 % vs 4,4 %. Sigue más del doble, con la mejora concentrada en el campo (G1).</p>
-<p>En el mapa del <strong>pooled</strong>, Itapúa, San Pedro y Canindeyú quedan ~11,6–11,9 % y Capital en 2,1 % (G4). Eso no es la foto de 2025: ese año el máximo es Canindeyú (11,7 %) e Itapúa/San Pedro bajan a ~9 %; Misiones y Paraguarí suben. Ñeembucú pooled n = 618; en 2025 n = 153.</p>
+<p>La brecha de zona no se da vuelta. En 2022–2025: 11,4 % rural vs 4,9 % urbana. En 2025: 10,4 % vs 4,4 %. Sigue más del doble, con la mejora concentrada en el campo (G1).</p>
+<p>En el mapa de 2022–2025, Itapúa, San Pedro y Canindeyú quedan ~11,6–11,9 % y Capital en 2,1 % (G4). En 2025 el máximo es Canindeyú (11,7 %) e Itapúa/San Pedro bajan a ~9 %; Misiones y Paraguarí suben. Ñeembucú n = 618 en 2022–2025; en 2025 n = 153.</p>
 <p>Por edad, 1,1 % a los 12 y 18,5 % a los 17 (G3). Varones 8,4 %, mujeres 6,5 %. De los que asisten, ~93 % oficial en el campo y ~75 % en la ciudad (G7).</p>
-<p>Motivos: hay que separar pooled y 2025 (G5, G6). En 2022–2025 juntos mandan sin recursos (25,3 %), no quiere estudiar (23,2 %) y familia (20,4 %). En <strong>solo 2025</strong> el 1.° es no quiere estudiar (27,1 %) y sin recursos cae a 16,9 %. “No hay institución cerca” sigue siendo casi solo rural (10,6 % vs 0,6 % en el pooled; 7,8 % vs 0 % en 2025).</p>
-<h3 id="6.2.-Respuesta-parcial-a-la-pregunta-de-investigaci%C3%B3n">6.2. Respuesta parcial a la pregunta de investigación<a class="anchor-link" href="#6.2.-Respuesta-parcial-a-la-pregunta-de-investigaci%C3%B3n">¶</a></h3><p>Con lo descriptivo, zona y departamento se asocian con la inasistencia, con magnitud grande, y 2025 <strong>no deshace</strong> eso. Los hogares no dan un único motivo: plata, no querer seguir y familia. La oferta (escuela lejos) es un tema del campo. Lo que 2025 agrega es que <strong>el peso de esos motivos no es estable</strong>: en el último año gana “no quiere estudiar”, sobre todo en ciudad, y el ranking departamental del pooled no copia el de 2025.</p>
+<p>Motivos (G5, G6): en 2022–2025 mandan sin recursos (25,3 %), no quiere estudiar (23,2 %) y familia (20,4 %). En 2025 el 1.° es no quiere estudiar (27,1 %) y sin recursos cae a 16,9 %. “No hay institución cerca” sigue siendo casi solo rural (10,6 % vs 0,6 % en 2022–2025; 7,8 % vs 0 % en 2025).</p>
+<h3 id="6.2.-Respuesta-parcial-a-la-pregunta-de-investigaci%C3%B3n">6.2. Respuesta parcial a la pregunta de investigación<a class="anchor-link" href="#6.2.-Respuesta-parcial-a-la-pregunta-de-investigaci%C3%B3n">¶</a></h3><p>Con lo descriptivo, zona y departamento se asocian con la inasistencia, con magnitud grande, en todo 2022–2025. Los hogares no dan un único motivo: plata, no querer seguir y familia. La oferta (escuela lejos) es un tema del campo. El peso de esos motivos <strong>no es estable</strong> entre años: en 2025 gana “no quiere estudiar”, sobre todo en ciudad, y el ranking departamental de 2025 no copia el de 2022–2025.</p>
 <p>No cerrado: si las diferencias aguantan un test (H1–H4, H6), si “rural” es en realidad “departamento X” (H5), y si se puede anticipar el riesgo individual (Fase 3). No hay causalidad: no hay colegio identificado ni panel de las mismas personas.</p>
-<h3 id="6.3.-Limitaciones-detectadas-en-los-datos">6.3. Limitaciones detectadas en los datos<a class="anchor-link" href="#6.3.-Limitaciones-detectadas-en-los-datos">¶</a></h3><p>Boquerón y Alto Paraguay siguen fuera (tampoco en 2025). Ñeembucú 2025 es especialmente fino (n = 153). En 2025 el peso se llama <code>FACTOR</code> y viene más redondeado que <code>FEX.2022</code>; se unificó al cargar, pero no es el mismo formato de decimal. El motivo lo declara el hogar; que en 2025 suba “no quiere estudiar” puede ser cambio real o de cómo se responde. 2022–2025 no es un panel. El FEX acá pondera tasas, no errores estándar.</p>
+<h3 id="6.3.-Limitaciones-detectadas-en-los-datos">6.3. Limitaciones detectadas en los datos<a class="anchor-link" href="#6.3.-Limitaciones-detectadas-en-los-datos">¶</a></h3><p>Boquerón y Alto Paraguay no aparecen en ninguno de los cuatro años. Ñeembucú 2025 es especialmente fino (n = 153). En 2025 el peso se llama <code>FACTOR</code> y viene más redondeado que <code>FEX.2022</code>; se unificó al cargar, pero no es el mismo formato de decimal. El motivo lo declara el hogar; que en 2025 suba “no quiere estudiar” puede ser cambio real o de cómo se responde. 2022–2025 no es un panel. El FEX acá pondera tasas, no errores estándar.</p>
 <h3 id="6.4.-Decisiones-que-condicionan-las-fases-siguientes">6.4. Decisiones que condicionan las fases siguientes<a class="anchor-link" href="#6.4.-Decisiones-que-condicionan-las-fases-siguientes">¶</a></h3><p>Universo 12–17, objetivo <code>no_asiste</code>. Descriptivos ponderados. 2025 entra al mismo panel, con <code>FACTOR</code> → <code>FEX.2022</code>. No imputar motivo. Fase 3: sin establecimiento; predictores zona, departamento, edad, sexo. Si se usa año de encuesta como feature, 2025 puede estar marcando un régimen distinto de motivos (H6), no solo un dummy más.</p>
 <h3 id="6.5.-Hip%C3%B3tesis-que-se-llevan-a-la-Fase-2">6.5. Hipótesis que se llevan a la Fase 2<a class="anchor-link" href="#6.5.-Hip%C3%B3tesis-que-se-llevan-a-la-Fase-2">¶</a></h3><ol>
 <li><strong>H1</strong> — rural &gt; urbana. Lo más estable, también en 2025.</li>
 <li><strong>H4</strong> — sube con la edad. Igual de estable.</li>
-<li><strong>H3</strong> — hay diferencias entre departamentos; el <em>quién está peor</em> depende de si se poolée o se mire 2025.</li>
+<li><strong>H3</strong> — hay diferencias entre departamentos; el <em>quién está peor</em> en 2022–2025 no es idéntico al de 2025.</li>
 <li><strong>H2</strong> — zona × motivo agrupado no independientes.</li>
-<li><strong>H6</strong> — el mix de motivos 2025 ≠ 2022–2024. Es lo que el año nuevo obliga a testear.</li>
+<li><strong>H6</strong> — el mix de motivos de 2025 no es el mismo que el de 2022–2024.</li>
 <li><strong>H5</strong> — la brecha de zona sobrevive al controlar departamento, edad y sexo.</li>
 </ol>
 <p>Fase 3: target <code>no_asiste</code>. Línea base: “todos asisten” o logística solo con zona.</p>

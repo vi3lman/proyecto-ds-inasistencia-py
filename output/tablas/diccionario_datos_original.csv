@@ -1,4 +1,4 @@
-campo,tipo_detectado,tipo_correcto,descripcion,unidad,n_unicos,rango_o_categorias,pct_faltantes
+﻿campo,tipo_detectado,tipo_correcto,descripción,unidad,n_únicos,rango_o_categorías,pct_faltantes
 UPM,int64,entero,Unidad primaria de muestreo del diseño de la EPHC,código,1827,"[14.00 — 28,774.00]",0.0
 NVIVI,int64,entero,Número de vivienda dentro de la UPM,código,173,[1.00 — 975.00],0.0
 NHOGA,int64,entero,Número de hogar dentro de la vivienda,código,3,"1, 2, 3",0.0
