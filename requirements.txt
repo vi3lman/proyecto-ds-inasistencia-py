@@ -9,5 +9,6 @@ statsmodels>=0.14    # proporciones, logística, BH (Fase 2)
 pyarrow>=14.0        # dataset limpio en .parquet
 jupyter>=1.0
 nbconvert>=7.0       # exportación del notebook a HTML
+soupsieve<3          # soupsieve 3.x rompe la exportación HTML de nbconvert 7.17 (selector img:not([alt]))
 # Fase 3:
 # scikit-learn>=1.3   # modelado predictivo

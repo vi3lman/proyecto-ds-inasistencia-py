@@ -27,20 +27,18 @@ Fase 2 se realiza sobre el *n* muestral (sin pesos de replicación).
 ```
 .
 ├── data/
-│   └── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv (no versionados)
+│   ├── raw/            # REG02_EPHC_ANUAL_{2022,2023,2024,2025}.csv (no versionados)
+│   └── processed/      # dataset_fase1.parquet: dataset limpio que genera la Fase 1 y usa la Fase 2
 ├── notebooks/
 │   ├── Fase1_DataScience_EPHC.ipynb
-│   └── Fase2_DataScience_EPHC.ipynb
+│   └── Fase2_DataScience_EPHC.ipynb   # autónomo: contrastes, supuestos, figuras y tabla resumen
 ├── src/
-│   └── fase2_helpers.py
-├── scripts/
-│   └── build_fase2.py  # regenera tablas, figuras, notebook e informe de Fase 2
+│   └── fase2_helpers.py               # funciones estadísticas auxiliares de la Fase 2
 ├── output/
-│   ├── dataset_fase1.parquet
 │   ├── Informe_Fase2.pdf / .html
 │   ├── Fase2.html
 │   ├── figuras/        # G1…G8 (Fase 1) y F2_* (Fase 2)
-│   └── tablas/         # diccionarios, bitácora, fase2_resumen_contrastes.csv
+│   └── tablas/         # diccionarios, bitácora, fase2_resumen_contrastes.csv, fase2_posthoc_h3.csv, fase2_residuos_h6.csv
 ├── requirements.txt
 └── README.md
 ```
@@ -62,8 +60,7 @@ pip install -r requirements.txt
 jupyter nbconvert --to notebook --execute --inplace notebooks/Fase1_DataScience_EPHC.ipynb
 jupyter nbconvert --to html notebooks/Fase1_DataScience_EPHC.ipynb --output ../output/Fase1.html
 
-# Fase 2 (requiere output/dataset_fase1.parquet)
-python scripts/build_fase2.py
+# Fase 2 (lee data/processed/dataset_fase1.parquet, generado por la Fase 1)
 jupyter nbconvert --to notebook --execute --inplace notebooks/Fase2_DataScience_EPHC.ipynb
 jupyter nbconvert --to html notebooks/Fase2_DataScience_EPHC.ipynb --output-dir output --output Fase2.html
 ```
@@ -90,7 +87,13 @@ Ningún resultado se extiende a esa región.
 
 - Rutas relativas; semilla `SEMILLA = 42`.
 - Fase 1: descriptivos ponderados por `factor_expansion`.
-- Fase 2: α = 0.05 a priori; BH sobre H1–H4 y H6; IC bootstrap de la diferencia rural−urbana; helpers en `src/fase2_helpers.py`.
+- Fase 2:
+  - α = 0.05 declarado a priori;
+  - BH sobre H1–H4 y H6, y BH propia para el post hoc de H3;
+  - IC bootstrap de la diferencia rural−urbana y de la V de Cramér;
+  - sensibilidad con errores estándar agrupados por UPM;
+  - funciones auxiliares en `src/fase2_helpers.py`;
+  - el notebook calcula todas sus tablas y figuras: no depende de resultados guardados.
 
 ## Calendario
 
