@@ -121,3 +121,83 @@ def year_folds(years: list[int]) -> list[tuple[np.ndarray, np.ndarray]]:
         val_y = years[i]
         folds.append((np.array(train_y), np.array([val_y])))
     return folds
+
+
+# Valores válidos observados en EPHC (sin Chaco / Alto Paraguay / Boquerón).
+ZONAS_VALIDAS = ("Urbana", "Rural")
+SEXOS_VALIDOS = ("Hombre", "Mujer")
+DEPARTAMENTOS_VALIDOS = (
+    "Alto Paraná",
+    "Amambay",
+    "Caaguazú",
+    "Caazapá",
+    "Canindeyú",
+    "Capital",
+    "Central",
+    "Concepción",
+    "Cordillera",
+    "Guairá",
+    "Itapúa",
+    "Misiones",
+    "Paraguarí",
+    "Presidente Hayes",
+    "San Pedro",
+    "Ñeembucú",
+)
+
+
+def make_feature_frame(
+    edad: float,
+    zona: str,
+    departamento: str,
+    sexo: str,
+) -> pd.DataFrame:
+    """Arma una fila X con las columnas que esperan los pipelines de Fase 3."""
+    edad_f = float(edad)
+    if not (12 <= edad_f <= 17):
+        raise ValueError(f"edad debe estar entre 12 y 17 (recibido: {edad_f})")
+    zona_s = str(zona).strip()
+    dep_s = str(departamento).strip()
+    sexo_s = str(sexo).strip()
+    if zona_s not in ZONAS_VALIDAS:
+        raise ValueError(f"zona inválida: {zona_s!r}. Usá una de {ZONAS_VALIDAS}")
+    if sexo_s not in SEXOS_VALIDOS:
+        raise ValueError(f"sexo inválido: {sexo_s!r}. Usá uno de {SEXOS_VALIDOS}")
+    if dep_s not in DEPARTAMENTOS_VALIDOS:
+        raise ValueError(
+            f"departamento inválido: {dep_s!r}. Usá uno de {DEPARTAMENTOS_VALIDOS}"
+        )
+    return pd.DataFrame(
+        [{"edad": edad_f, "zona": zona_s, "departamento": dep_s, "sexo": sexo_s}]
+    )[FEATURE_COLS]
+
+
+def predict_with_models(
+    X: pd.DataFrame,
+    fitted: dict[str, Any],
+    thresholds: dict[str, float],
+) -> pd.DataFrame:
+    """Para cada modelo: probabilidad de no asistir, decisión 0/1 y etiqueta."""
+    rows: list[dict[str, Any]] = []
+    for nombre, model in fitted.items():
+        umbral = float(thresholds.get(nombre, 0.5))
+        if hasattr(model, "predict_proba"):
+            proba = float(model.predict_proba(X)[0, 1])
+        else:
+            pred0 = int(model.predict(X)[0])
+            proba = float(pred0)
+        pred = int(proba >= umbral)
+        rows.append(
+            {
+                "modelo": nombre,
+                "X_edad": X.iloc[0]["edad"],
+                "X_zona": X.iloc[0]["zona"],
+                "X_departamento": X.iloc[0]["departamento"],
+                "X_sexo": X.iloc[0]["sexo"],
+                "chance_no_asiste": round(proba, 4),
+                "umbral": umbral,
+                "Y_predicho": pred,
+                "etiqueta": "no asiste" if pred == 1 else "asiste",
+            }
+        )
+    return pd.DataFrame(rows)

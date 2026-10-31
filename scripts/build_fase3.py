@@ -440,6 +440,17 @@ def save_model(ctx):
     }
     path = DIR_MOD / "fase3_modelo_final.joblib"
     joblib.dump(bundle, path)
+    # Bundle con todos los modelos para predicción manual comparativa
+    joblib.dump(
+        {
+            "fitted": ctx["fitted"],
+            "thresholds": ctx["thresholds"],
+            "features": FEATURE_COLS,
+            "target": TARGET,
+            "best_model": best,
+        },
+        DIR_MOD / "fase3_modelos_todos.joblib",
+    )
     meta = dict(ctx["meta"])
     meta["umbral"] = ctx["thresholds"][best]
     (DIR_MOD / "fase3_modelo_meta.json").write_text(
@@ -513,7 +524,7 @@ tr:nth-child(even) td {{ background: #f4f7fa; }}
 .page-break {{ page-break-before: always; }}
 </style></head><body>
 <div class="cover">
-  <div class="kicker">Universidad — Facultad de Ingeniería · Data Science</div>
+  <div class="kicker">Facultad Politécnica — Universidad Nacional de Asunción · Data Science</div>
   <h1>Informe de Fase 3 — Análisis predictivo</h1>
   <p><strong>Inasistencia escolar en la adolescencia paraguaya</strong><br>
   Clasificación de <code>no_asiste</code> · EPHC 2022–2025 · 12–17 años</p>
@@ -647,7 +658,7 @@ th {{ background:#1f4e79; color:#fff; }}
 .page-break {{ page-break-before: always; }}
 </style></head><body>
 <div class="cover">
-  <p style="color:#1f4e79; letter-spacing:.08em; text-transform:uppercase; font-size:9pt;">Proyecto Integrador · Data Science</p>
+  <p style="color:#1f4e79; letter-spacing:.08em; text-transform:uppercase; font-size:9pt;">Facultad Politécnica — Universidad Nacional de Asunción · Data Science</p>
   <h1>Informe integrador</h1>
   <p><strong>Inasistencia escolar en la adolescencia paraguaya (EPHC 2022–2025)</strong></p>
   <p>Matías Morínigo · César Vielman · Iván Paredes<br>24 de octubre de 2026</p>
@@ -760,7 +771,9 @@ sns.set_theme(style='whitegrid')
 RAIZ = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
 sys.path.insert(0, str(RAIZ))
 from src.fase3_helpers import (FEATURE_COLS, TARGET, load_modeling_frame, chronological_split,
-                               make_pipeline, metrics_row, best_threshold_by_f1, year_folds)
+                               make_pipeline, metrics_row, best_threshold_by_f1, year_folds,
+                               make_feature_frame, predict_with_models,
+                               ZONAS_VALIDAS, SEXOS_VALIDOS, DEPARTAMENTOS_VALIDOS)
 
 DIR_OUT, DIR_FIG, DIR_TAB, DIR_MOD = RAIZ/'output', RAIZ/'output'/'figuras', RAIZ/'output'/'tablas', RAIZ/'output'/'modelos'
 for d in (DIR_FIG, DIR_TAB, DIR_MOD):
@@ -878,20 +891,69 @@ display(pd.crosstab(err['zona'], err['tipo'], normalize='index').round(3))
 display(err[err.tipo=='FN'].groupby('edad').size().rename('FN').to_frame().join(
         err[err[TARGET]==1].groupby('edad').size().rename('positivos')).assign(tasa_FN=lambda d: d.FN/d.positivos))
 """))
-    cells.append(md("""## 5. Serialización
+    cells.append(md("""## 5. Predicción manual — ingresar X y ver el Y de cada modelo
 
-El modelo final y su umbral se guardan para `scripts/infer_fase3.py`.
+Editá las 4 variables de abajo y volvé a ejecutar la celda. Cada modelo responde con su chance
+y con `Y_predicho` (0 = asiste, 1 = no asiste).
+"""))
+    cells.append(code("""# >>> EDITÁ SOLO ESTOS 4 VALORES <<<
+edad = 16
+zona = 'Rural'                 # 'Urbana' o 'Rural'
+departamento = 'San Pedro'     # ver lista impresa abajo
+sexo = 'Hombre'                # 'Hombre' o 'Mujer'
+
+# Esta celda funciona sola (no hace falta correr todo el notebook antes)
+import sys
+from pathlib import Path
+import joblib
+
+_raiz = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
+sys.path.insert(0, str(_raiz))
+from src.fase3_helpers import (
+    make_feature_frame, predict_with_models,
+    ZONAS_VALIDAS, SEXOS_VALIDOS, DEPARTAMENTOS_VALIDOS,
+)
+
+_dir_mod = _raiz / 'output' / 'modelos'
+if 'fitted' not in globals() or 'thresholds' not in globals():
+    _bundle = joblib.load(_dir_mod / 'fase3_modelos_todos.joblib')
+    fitted = _bundle['fitted']
+    thresholds = _bundle['thresholds']
+    BEST_NAME = _bundle.get('best_model', 'Logística')
+    print('(Modelos cargados desde fase3_modelos_todos.joblib)')
+
+print('Zonas válidas:', ZONAS_VALIDAS)
+print('Sexos válidos:', SEXOS_VALIDOS)
+print('Departamentos válidos:', DEPARTAMENTOS_VALIDOS)
+
+X_manual = make_feature_frame(edad, zona, departamento, sexo)
+print('\nX ingresado:')
+display(X_manual)
+
+tabla_manual = predict_with_models(X_manual, fitted, thresholds)
+display(tabla_manual[['modelo', 'chance_no_asiste', 'umbral', 'Y_predicho', 'etiqueta']])
+print('Modelo oficial del proyecto:', BEST_NAME,
+      '→', tabla_manual.loc[tabla_manual.modelo == BEST_NAME, 'etiqueta'].iloc[0])
+"""))
+    cells.append(md("""## 6. Serialización
+
+El modelo final, el umbral y el bundle con todos los modelos se guardan para reutilizar
+(`scripts/infer_fase3.py` o esta misma sección sin reentrenar).
 """))
     cells.append(code("""bundle = {'pipeline': model, 'threshold': umbral, 'model_name': BEST_NAME,
           'features': FEATURE_COLS, 'target': TARGET}
 joblib.dump(bundle, DIR_MOD/'fase3_modelo_final.joblib')
+joblib.dump({'fitted': fitted, 'thresholds': thresholds, 'features': FEATURE_COLS,
+             'target': TARGET, 'best_model': BEST_NAME},
+            DIR_MOD/'fase3_modelos_todos.joblib')
 meta = {'best_model': BEST_NAME, 'umbral': umbral, 'features': FEATURE_COLS, 'target': TARGET,
         'test_year': TEST_YEAR, 'seed': SEMILLA, 'best_params': BEST}
 (DIR_MOD/'fase3_modelo_meta.json').write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding='utf-8')
 resumen.to_csv(DIR_TAB/'fase3_metricas.csv', index=False, encoding='utf-8-sig')
 print('Guardado:', DIR_MOD/'fase3_modelo_final.joblib')
+print('Guardado:', DIR_MOD/'fase3_modelos_todos.joblib')
 """))
-    cells.append(md(f"""## 6. Conclusión
+    cells.append(md(f"""## 7. Conclusión
 
 - La línea base mayoritaria no detecta inasistencia (F1 ≈ 0); los tres modelos la superan en F1/AUC.
 - Modelo final: **{best}**, evaluado una sola vez en 2025.
