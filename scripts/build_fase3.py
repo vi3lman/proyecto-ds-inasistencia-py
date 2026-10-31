@@ -26,13 +26,19 @@ from src.fase3_helpers import (  # noqa: E402
     FEATURES_CAT,
     FEATURES_NUM,
     TARGET,
+    best_threshold_by_fbeta,
     best_threshold_by_f1,
     chronological_split,
+    fit_temporal_grid,
     load_modeling_frame,
     make_pipeline,
     metrics_row,
+    sample_weight_balanced,
     year_folds,
 )
+
+# beta=2: prioriza recall (objetivo del enriquecimiento económico)
+THRESHOLD_BETA = 2.0
 
 SEMILLA = 42
 ALPHA = 0.05
@@ -114,47 +120,16 @@ def temporal_cv_score(pipe, train_df, param_grid, scoring="f1"):
     return best_params, best, pd.DataFrame(rows)
 
 
-def _sample_weight(y: pd.Series) -> np.ndarray:
-    y = np.asarray(y)
-    pos = (y == 1).sum()
-    neg = (y == 0).sum()
-    w = np.ones(len(y), dtype=float)
-    w[y == 1] = neg / max(pos, 1)
-    return w
-
-
 def fit_grid(estimator, param_grid, train_df, scale_numeric: bool, use_sample_weight: bool = False):
-    years = sorted(train_df["anio_encuesta"].unique())
-    folds = year_folds(list(years))
-    best_score, best_params, rows = -1.0, None, []
-    from sklearn.metrics import f1_score, roc_auc_score
-
-    for params in ParameterGrid(param_grid):
-        fold_f1 = []
-        for train_years, val_years in folds:
-            tr = train_df[train_df["anio_encuesta"].isin(train_years)]
-            va = train_df[train_df["anio_encuesta"].isin(val_years)]
-            clf = estimator.__class__(**estimator.get_params())
-            clf.set_params(**params)
-            if "random_state" in clf.get_params():
-                clf.set_params(random_state=SEMILLA)
-            model = make_pipeline(clf, scale_numeric=scale_numeric)
-            fit_kw = {}
-            if use_sample_weight:
-                fit_kw["clf__sample_weight"] = _sample_weight(tr[TARGET])
-            model.fit(tr[FEATURE_COLS], tr[TARGET], **fit_kw)
-            proba = model.predict_proba(va[FEATURE_COLS])[:, 1]
-            # umbral provisional 0.5 en CV; el umbral final se calibra en 2024
-            pred = (proba >= 0.5).astype(int)
-            f1 = f1_score(va[TARGET], pred, zero_division=0)
-            auc = roc_auc_score(va[TARGET], proba)
-            fold_f1.append(f1)
-            rows.append({"params": json.dumps(params, sort_keys=True), "val_year": int(val_years[0]),
-                         "f1": f1, "auc": auc})
-        mean_f1 = float(np.mean(fold_f1))
-        if mean_f1 > best_score:
-            best_score, best_params = mean_f1, params
-    return best_params, best_score, pd.DataFrame(rows)
+    """Wrapper: misma API histórica, delega en helpers."""
+    return fit_temporal_grid(
+        estimator,
+        param_grid,
+        train_df,
+        scale_numeric=scale_numeric,
+        use_sample_weight=use_sample_weight,
+        seed=SEMILLA,
+    )
 
 
 def run_modeling(df: pd.DataFrame):
@@ -201,7 +176,7 @@ def run_modeling(df: pd.DataFrame):
     )
     logit.fit(inner_train[FEATURE_COLS], inner_train[TARGET])
     proba_val = logit.predict_proba(inner_val[FEATURE_COLS])[:, 1]
-    t_logit, _ = best_threshold_by_f1(inner_val[TARGET], proba_val)
+    t_logit, _ = best_threshold_by_fbeta(inner_val[TARGET], proba_val, beta=THRESHOLD_BETA)
     logit.fit(X_train, y_train)
     fitted["Logística"] = logit
     thresholds["Logística"] = t_logit
@@ -225,7 +200,9 @@ def run_modeling(df: pd.DataFrame):
         RandomForestClassifier(random_state=SEMILLA, n_jobs=-1, **best_rf), scale_numeric=False
     )
     rf.fit(inner_train[FEATURE_COLS], inner_train[TARGET])
-    t_rf, _ = best_threshold_by_f1(inner_val[TARGET], rf.predict_proba(inner_val[FEATURE_COLS])[:, 1])
+    t_rf, _ = best_threshold_by_fbeta(
+        inner_val[TARGET], rf.predict_proba(inner_val[FEATURE_COLS])[:, 1], beta=THRESHOLD_BETA
+    )
     rf.fit(X_train, y_train)
     fitted["Random Forest"] = rf
     thresholds["Random Forest"] = t_rf
@@ -254,17 +231,15 @@ def run_modeling(df: pd.DataFrame):
     hgb = make_pipeline(
         HistGradientBoostingClassifier(random_state=SEMILLA, **best_hgb), scale_numeric=False
     )
-    # sample weights for imbalance on final fits
-    def sw(y):
-        pos = (y == 1).sum()
-        neg = (y == 0).sum()
-        w = np.ones(len(y))
-        w[y == 1] = neg / max(pos, 1)
-        return w
-
-    hgb.fit(inner_train[FEATURE_COLS], inner_train[TARGET], clf__sample_weight=sw(inner_train[TARGET]))
-    t_hgb, _ = best_threshold_by_f1(inner_val[TARGET], hgb.predict_proba(inner_val[FEATURE_COLS])[:, 1])
-    hgb.fit(X_train, y_train, clf__sample_weight=sw(y_train))
+    hgb.fit(
+        inner_train[FEATURE_COLS],
+        inner_train[TARGET],
+        clf__sample_weight=sample_weight_balanced(inner_train[TARGET]),
+    )
+    t_hgb, _ = best_threshold_by_fbeta(
+        inner_val[TARGET], hgb.predict_proba(inner_val[FEATURE_COLS])[:, 1], beta=THRESHOLD_BETA
+    )
+    hgb.fit(X_train, y_train, clf__sample_weight=sample_weight_balanced(y_train))
     fitted["HistGradientBoosting"] = hgb
     thresholds["HistGradientBoosting"] = t_hgb
     for split, X, y in [("train", X_train, y_train), ("test", X_test, y_test)]:
@@ -547,10 +522,10 @@ tr:nth-child(even) td {{ background: #f4f7fa; }}
 <h2>1. Correcciones a la Fase 2</h2>
 <p>No hay devolución escrita del docente archivada en el repositorio. Se conserva el diseño inferencial de la
 Fase 2 y se operacionaliza lo ya fijado para el modelado: partición <strong>cronológica</strong>
-(entrenar 2022–2024, probar 2025); predictores <code>zona</code>, <code>departamento</code>, <code>edad</code> y
-<code>sexo</code>; target <code>no_asiste</code>; línea base = clase mayoritaria; dependencia por UPM queda fuera
-del estimador predictivo (no hay pesos de replicación DGEEC en scikit-learn), pero se discute como límite
-de generalización.</p>
+(entrenar 2022–2024, probar 2025); predictores demográficos más
+<code>condicion_actividad</code>, <code>pobreza</code> y <code>log_ipcm</code>; target <code>no_asiste</code>;
+línea base = clase mayoritaria; dependencia por UPM queda fuera del estimador predictivo
+(no hay pesos de replicación DGEEC en scikit-learn), pero se discute como límite de generalización.</p>
 
 <h2>2. Tarea predictiva y diseño del experimento</h2>
 <div class="box">Clasificación binaria: predecir si un adolescente de 12–17 años <em>no asiste</em> a un centro
@@ -559,16 +534,16 @@ educativo (<code>no_asiste = 1</code>), con predictores respaldados por la Fase 
 atributos observables en la EPHC, sin usar el motivo (solo disponible cuando ya no asiste).</p>
 <ul>
   <li><strong>Target:</strong> <code>no_asiste</code> (prevalencia train ≈ {100*meta['rate_train']:.1f} %; test 2025 ≈ {100*meta['rate_test']:.1f} %).</li>
-  <li><strong>Features:</strong> edad, zona, departamento, sexo.</li>
+  <li><strong>Features:</strong> edad, zona, departamento, sexo, condición de actividad (PEAA), pobreza e IPCM (log).</li>
   <li><strong>Partición:</strong> train n = {meta['n_train']:,} (2022–2024); test n = {meta['n_test']:,} (solo 2025).</li>
   <li><strong>Validación:</strong> expanding year-folds dentro de 2022–2024 + holdout 2024 para el umbral.</li>
   <li><strong>Métrica de selección:</strong> F1 media en validación temporal (desbalance ≈ 8 %).</li>
 </ul>
 
 <h2>3. Preparación y partición</h2>
-<p>One-hot de categóricas; estandarización de edad solo en la logística. Desbalance: <code>class_weight</code>
-en logística y bosques; pesos de muestra en boosting; umbral de decisión calibrado en 2024 maximizando F1
-(no se toca 2025 para elegir umbral ni hiperparámetros).</p>
+<p>One-hot de categóricas; estandarización de numéricas (<code>edad</code>, <code>log_ipcm</code>) solo en la logística. Desbalance: <code>class_weight</code>
+en logística y bosques; pesos de muestra en boosting; umbral de decisión calibrado en 2024 maximizando <strong>F2</strong>
+(prioriza recall; no se toca 2025 para elegir umbral ni hiperparámetros).</p>
 
 <h2>4. Línea base y modelos</h2>
 <ol>
@@ -611,8 +586,8 @@ Supera claramente a la línea base en F1/recall/AUC. La brecha train−test en F
 <div class="fig"><img src="{img_b64('F3_5_importancia.png')}" alt="imp">
 <div class="caption">Gráfico F3-5. Importancia de variables (Random Forest).</div></div>
 <table><tr><th>Variable (RF)</th><th>Importancia</th></tr>{imp_rows}</table>
-<p>Las variables más influyentes (edad, zona rural, departamentos de alta inasistencia) coinciden con H1, H3 y H4
-de la Fase 2. El sexo aporta menos, coherente con un OR más cercano a 1 en H5.</p>
+<p>Además de edad/territorio, las variables económicas (actividad del adolescente, pobreza, ingreso) concentran
+buena parte de la importancia, alineadas con los motivos “sin recursos” y “necesidad de trabajar” de Fase 1.</p>
 
 <h2>7. Conclusión de la Fase 3</h2>
 <p><strong>Desempeño.</strong> El modelo final ({best}) supera a la línea base mayoritaria en las métricas relevantes
@@ -620,8 +595,9 @@ para la clase minoritaria. No es un detector perfecto: el recall &lt; 1 implica 
 riesgo no alertados).</p>
 <p><strong>Utilidad práctica.</strong> Sirve como <em>priorización</em> territorial y etaria (dónde concentrar
 acompañamiento), no como veredicto individual. No debe usarse para sancionar hogares ni para negar cupos.</p>
-<p><strong>Límites.</strong> Corte transversal; sin ingreso/trabajo/distancia a la escuela; cobertura sin Boquerón ni
-Alto Paraguay; 2025 es un solo año de prueba; el diseño muestral EPHC no entra en el estimador.</p>
+<p><strong>Límites.</strong> Corte transversal; sin distancia a la escuela; cobertura sin Boquerón ni
+Alto Paraguay; 2025 es un solo año de prueba; el diseño muestral EPHC no entra en el estimador.
+Ingreso y pobreza están correlacionados (se incluyen ambos por pedido de mejora de recall).</p>
 <p><strong>Riesgos éticos.</strong> Un umbral agresivo eleva falsos positivos (estigmatización); uno permisivo deja
 pasar falsos negativos. Cualquier uso institucional debe fijar el umbral con costo asimétrico explícito y auditoría
 por departamento/zona.</p>
@@ -690,15 +666,15 @@ sobre el mismo universo EPHC.</p>
   <li>Clasificación de <code>no_asiste</code>; train 2022–2024 / test 2025.</li>
   <li>Modelo final: <strong>{best}</strong>. En 2025: F1 = {te['f1']:.3f}, recall = {te['recall']:.3f},
   precisión = {te['precision']:.3f}, AUC-ROC = {te['auc_roc']:.3f} (supera la línea base mayoritaria en F1/recall).</li>
-  <li>Importancias alineadas con F1–F2: edad, ruralidad, departamentos de alta tasa.</li>
+  <li>Con features económicas (actividad, pobreza, IPCM) mejora recall/F1 respecto al modelo solo demográfico.</li>
 </ul>
 
 <h2>5. Conclusión general</h2>
 <p>La inasistencia adolescente en Paraguay, en la cobertura EPHC disponible, se concentra en el campo, en
-ciertos departamentos y en las edades altas del rango 12–17. Esa lectura descriptiva se sostiene
-inferencialmente y aporta señal predictiva fuera de muestra. El modelo es una herramienta de
-<strong>priorización</strong>, no de sanción individual. Trabajo futuro: incorporar ingreso/trabajo/distancia a
-la escuela, pesos de diseño DGEEC y un segundo año de prueba cuando exista.</p>
+ciertos departamentos y en las edades altas del rango 12–17, y se asocia con trabajo adolescente y
+restricción de ingresos. Esa lectura descriptiva se sostiene inferencialmente y aporta señal predictiva
+fuera de muestra. El modelo es una herramienta de <strong>priorización</strong>, no de sanción individual.
+Trabajo futuro: distancia a la escuela, pesos de diseño DGEEC y un segundo año de prueba cuando exista.</p>
 
 <h2>6. Entregables</h2>
 <table>
@@ -748,7 +724,8 @@ def write_notebook(ctx) -> Path:
     cells.append(md("""## 1. Correcciones a la Fase 2 y tarea predictiva
 
 No hay devolución escrita del docente en el repositorio. Se mantiene el puente Fase 2 → 3: predictores
-`zona`, `departamento`, `edad`, `sexo`; target `no_asiste`; partición cronológica; línea base = clase mayoritaria.
+`zona`, `departamento`, `edad`, `sexo`, `condicion_actividad`, `pobreza`, `log_ipcm`;
+target `no_asiste`; partición cronológica; línea base = clase mayoritaria.
 
 **Tarea:** clasificar si un adolescente no asiste. El motivo declarado **no** es predictor (solo se observa
 cuando ya no asiste).
@@ -771,9 +748,11 @@ sns.set_theme(style='whitegrid')
 RAIZ = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
 sys.path.insert(0, str(RAIZ))
 from src.fase3_helpers import (FEATURE_COLS, TARGET, load_modeling_frame, chronological_split,
-                               make_pipeline, metrics_row, best_threshold_by_f1, year_folds,
+                               make_pipeline, metrics_row, best_threshold_by_fbeta, year_folds,
+                               fit_temporal_grid, sample_weight_balanced,
                                make_feature_frame, predict_with_models,
                                ZONAS_VALIDAS, SEXOS_VALIDOS, DEPARTAMENTOS_VALIDOS)
+THRESHOLD_BETA = 2.0  # prioriza recall
 
 DIR_OUT, DIR_FIG, DIR_TAB, DIR_MOD = RAIZ/'output', RAIZ/'output'/'figuras', RAIZ/'output'/'tablas', RAIZ/'output'/'modelos'
 for d in (DIR_FIG, DIR_TAB, DIR_MOD):
@@ -791,31 +770,100 @@ print(df.shape, 'train', train_df.shape, 'test', test_df.shape)
 print('Tasa train', round(train_df[TARGET].mean(), 4), '· tasa test', round(test_df[TARGET].mean(), 4))
 train_df.head(3)
 """))
-    cells.append(md("""## 3. Línea base y tres familias de modelos
+    cells.append(md("""## 3. Selección de hiperparámetros (CV temporal)
 
-1. **Dummy** mayoritaria. 2. **Logística**. 3. **Random Forest**. 4. **HistGradientBoosting**.
-Hiperparámetros por validación temporal expanding dentro de 2022–2024. Umbral F1 en holdout 2024.
-El conjunto **2025 no se usa** hasta la evaluación final.
+Esquema — el **test 2025 no entra** acá:
+
+1. **Train interno:** años anteriores al año de validación (expanding).
+2. **Validación:** año siguiente (2023, luego 2024).
+3. Se elige la combinación con mayor **F1 media** en esos folds.
+4. Después, el umbral se calibra con **F2** en holdout 2024; recién ahí se mide test 2025.
 """))
-    cells.append(code(f"""# Hiperparámetros ya seleccionados por scripts/build_fase3.py (misma semilla y grilla)
-BEST = {{
-  'Logística': {repr(bp['Logística'])},
-  'Random Forest': {repr(bp['Random Forest'])},
-  'HistGradientBoosting': {repr(bp['HistGradientBoosting'])},
-}}
-print('Mejores hiperparámetros:', BEST)
+    cells.append(code("""from src.fase3_helpers import fit_temporal_grid, sample_weight_balanced
 
 X_tr, y_tr = train_df[FEATURE_COLS], train_df[TARGET]
 X_te, y_te = test_df[FEATURE_COLS], test_df[TARGET]
-inner_tr = train_df[train_df.anio_encuesta < 2024]
+inner_tr = train_df[train_df.anio_encuesta < 2024]   # calibra umbral
 inner_va = train_df[train_df.anio_encuesta == 2024]
 
-def sw(y):
-    w = np.ones(len(y)); pos = (y==1).sum(); w[y==1] = (y==0).sum()/max(pos,1); return w
+print('Folds temporales (solo train 2022–2024):')
+for tr_y, va_y in year_folds(sorted(train_df.anio_encuesta.unique())):
+    print(f'  train años {list(tr_y)}  →  val {list(va_y)}')
 
-fitted, thresholds, rows = {{}}, {{}}, []
+# --- Grillas a explorar (no son el resultado: se buscan abajo) ---
+GRIDS = {
+    'Logística': {
+        'estimator': LogisticRegression(random_state=SEMILLA),
+        'grid': {
+            'C': [0.1, 1.0, 3.0],
+            'class_weight': ['balanced'],
+            'max_iter': [500],
+            'solver': ['lbfgs'],
+        },
+        'scale': True,
+        'sample_weight': False,
+    },
+    'Random Forest': {
+        'estimator': RandomForestClassifier(random_state=SEMILLA, n_jobs=-1),
+        'grid': {
+            'n_estimators': [100, 200],
+            'max_depth': [6, 10, None],
+            'min_samples_leaf': [5, 20],
+            'class_weight': ['balanced_subsample'],
+        },
+        'scale': False,
+        'sample_weight': False,
+    },
+    'HistGradientBoosting': {
+        'estimator': HistGradientBoostingClassifier(random_state=SEMILLA),
+        'grid': {
+            'learning_rate': [0.05, 0.1],
+            'max_depth': [3, 5],
+            'max_iter': [100, 200],
+            'min_samples_leaf': [20, 50],
+        },
+        'scale': False,
+        'sample_weight': True,
+    },
+}
 
-# Baseline
+BEST, CV_F1, CV_TABLES = {}, {}, {}
+for nombre, cfg in GRIDS.items():
+    n_combos = len(list(ParameterGrid(cfg['grid'])))
+    print(f'\\n=== {nombre}: explorando {n_combos} combinaciones ===')
+    best_params, mean_f1, cv_df = fit_temporal_grid(
+        cfg['estimator'], cfg['grid'], train_df,
+        scale_numeric=cfg['scale'],
+        use_sample_weight=cfg['sample_weight'],
+        seed=SEMILLA,
+    )
+    BEST[nombre] = best_params
+    CV_F1[nombre] = mean_f1
+    CV_TABLES[nombre] = cv_df
+    print('Mejor F1 CV:', round(mean_f1, 4))
+    print('Mejores params:', best_params)
+    # resumen por combinación
+    resumen_cv = (cv_df.groupby('params')[['f1', 'auc']]
+                    .mean()
+                    .sort_values('f1', ascending=False)
+                    .head(5)
+                    .round(4))
+    display(resumen_cv)
+    cv_df.to_csv(DIR_TAB / f'fase3_cv_{nombre.lower().replace(" ", "_")}.csv',
+                 index=False, encoding='utf-8-sig')
+
+print('\\n>>> Resumen selección por F1 de CV temporal:')
+for k, v in sorted(CV_F1.items(), key=lambda kv: -kv[1]):
+    print(f'  {k}: F1_CV={v:.4f}  params={BEST[k]}')
+"""))
+    cells.append(md("""## 4. Entrenamiento con mejores hiperparámetros + umbral F2 + test 2025
+
+Con los `BEST` de la celda anterior: se calibra el umbral en 2024 (F2, prioriza recall),
+se reentrena en todo 2022–2024 y **recién acá** se evalúa 2025.
+"""))
+    cells.append(code("""fitted, thresholds, rows = {}, {}, []
+
+# --- Línea base ---
 base = make_pipeline(DummyClassifier(strategy='most_frequent'), scale_numeric=False)
 base.fit(X_tr, y_tr)
 fitted['Línea base (mayoritaria)'] = base
@@ -824,118 +872,167 @@ for split, X, y in [('train', X_tr, y_tr), ('test', X_te, y_te)]:
     pred = base.predict(X)
     rows.append(metrics_row('Línea base (mayoritaria)', split, y, pred, np.zeros(len(y))))
 
-# Logística
+# --- Logística ---
 logit = make_pipeline(LogisticRegression(random_state=SEMILLA, **BEST['Logística']), True)
 logit.fit(inner_tr[FEATURE_COLS], inner_tr[TARGET])
-t, _ = best_threshold_by_f1(inner_va[TARGET], logit.predict_proba(inner_va[FEATURE_COLS])[:,1])
+t, _ = best_threshold_by_fbeta(
+    inner_va[TARGET], logit.predict_proba(inner_va[FEATURE_COLS])[:, 1], beta=THRESHOLD_BETA
+)
 logit.fit(X_tr, y_tr)
 fitted['Logística'], thresholds['Logística'] = logit, t
 for split, X, y in [('train', X_tr, y_tr), ('test', X_te, y_te)]:
-    p = logit.predict_proba(X)[:,1]; rows.append(metrics_row('Logística', split, y, (p>=t).astype(int), p))
+    p = logit.predict_proba(X)[:, 1]
+    rows.append(metrics_row('Logística', split, y, (p >= t).astype(int), p))
 
-# RF
-rf = make_pipeline(RandomForestClassifier(random_state=SEMILLA, n_jobs=-1, **BEST['Random Forest']), False)
+# --- Random Forest ---
+rf = make_pipeline(
+    RandomForestClassifier(random_state=SEMILLA, n_jobs=-1, **BEST['Random Forest']), False
+)
 rf.fit(inner_tr[FEATURE_COLS], inner_tr[TARGET])
-t, _ = best_threshold_by_f1(inner_va[TARGET], rf.predict_proba(inner_va[FEATURE_COLS])[:,1])
+t, _ = best_threshold_by_fbeta(
+    inner_va[TARGET], rf.predict_proba(inner_va[FEATURE_COLS])[:, 1], beta=THRESHOLD_BETA
+)
 rf.fit(X_tr, y_tr)
 fitted['Random Forest'], thresholds['Random Forest'] = rf, t
 for split, X, y in [('train', X_tr, y_tr), ('test', X_te, y_te)]:
-    p = rf.predict_proba(X)[:,1]; rows.append(metrics_row('Random Forest', split, y, (p>=t).astype(int), p))
+    p = rf.predict_proba(X)[:, 1]
+    rows.append(metrics_row('Random Forest', split, y, (p >= t).astype(int), p))
 
-# HGB
-hgb = make_pipeline(HistGradientBoostingClassifier(random_state=SEMILLA, **BEST['HistGradientBoosting']), False)
-hgb.fit(inner_tr[FEATURE_COLS], inner_tr[TARGET], clf__sample_weight=sw(inner_tr[TARGET]))
-t, _ = best_threshold_by_f1(inner_va[TARGET], hgb.predict_proba(inner_va[FEATURE_COLS])[:,1])
-hgb.fit(X_tr, y_tr, clf__sample_weight=sw(y_tr))
+# --- HistGradientBoosting ---
+hgb = make_pipeline(
+    HistGradientBoostingClassifier(random_state=SEMILLA, **BEST['HistGradientBoosting']), False
+)
+hgb.fit(
+    inner_tr[FEATURE_COLS], inner_tr[TARGET],
+    clf__sample_weight=sample_weight_balanced(inner_tr[TARGET]),
+)
+t, _ = best_threshold_by_fbeta(
+    inner_va[TARGET], hgb.predict_proba(inner_va[FEATURE_COLS])[:, 1], beta=THRESHOLD_BETA
+)
+hgb.fit(X_tr, y_tr, clf__sample_weight=sample_weight_balanced(y_tr))
 fitted['HistGradientBoosting'], thresholds['HistGradientBoosting'] = hgb, t
 for split, X, y in [('train', X_tr, y_tr), ('test', X_te, y_te)]:
-    p = hgb.predict_proba(X)[:,1]; rows.append(metrics_row('HistGradientBoosting', split, y, (p>=t).astype(int), p))
+    p = hgb.predict_proba(X)[:, 1]
+    rows.append(metrics_row('HistGradientBoosting', split, y, (p >= t).astype(int), p))
 
 resumen = pd.DataFrame(rows)
-display(resumen.pivot(index='modelo', columns='split')[['f1','auc_roc','recall','precision','accuracy']].round(3))
-print('Umbrales:', thresholds)
-"""))
-    cells.append(md(f"""## 4. Evaluación final en 2025
+display(resumen.pivot(index='modelo', columns='split')[
+    ['f1', 'auc_roc', 'recall', 'precision', 'accuracy']
+].round(3))
+print('Umbrales (F2, val 2024):', thresholds)
 
-Modelo seleccionado por F1 de validación temporal en el pipeline de construcción: **{best}**.
-Abajo se reportan matriz de confusión, ROC e importancia de variables. El test se usa **una sola vez**.
+# Modelo oficial = mejor F1 de la CV temporal (sin mirar test)
+BEST_NAME = max(CV_F1, key=CV_F1.get)
+print(f'\\nModelo seleccionado por CV (sin test): {BEST_NAME}  F1_CV={CV_F1[BEST_NAME]:.4f}')
 """))
-    cells.append(code(f"""BEST_NAME = '{best}'
-model = fitted[BEST_NAME]
+    cells.append(md("""## 5. Evaluación del modelo elegido en test 2025
+
+El test se usa **una sola vez** sobre el modelo ya elegido por CV.
+"""))
+    cells.append(code("""model = fitted[BEST_NAME]
 umbral = thresholds[BEST_NAME]
-proba = model.predict_proba(X_te)[:,1]
+proba = model.predict_proba(X_te)[:, 1]
 pred = (proba >= umbral).astype(int)
-print(resumen[(resumen.modelo==BEST_NAME)&(resumen.split=='test')].T)
+print(resumen[(resumen.modelo == BEST_NAME) & (resumen.split == 'test')].T)
 
 fig, axes = plt.subplots(1, 2, figsize=(10, 4))
 ConfusionMatrixDisplay.from_predictions(y_te, pred, ax=axes[0], colorbar=False)
-axes[0].set_title('Matriz de confusión — test 2025')
+axes[0].set_title(f'Matriz de confusión — {BEST_NAME} · test 2025')
 RocCurveDisplay.from_predictions(y_te, proba, ax=axes[1], name=BEST_NAME)
-axes[1].plot([0,1],[0,1],'--', color='#52514e', lw=1)
+axes[1].plot([0, 1], [0, 1], '--', color='#52514e', lw=1)
 axes[1].set_title('ROC — test 2025')
-fig.tight_layout(); fig.savefig(DIR_FIG/'F3_notebook_eval.png'); plt.show()
+fig.tight_layout()
+fig.savefig(DIR_FIG / 'F3_notebook_eval.png')
+plt.show()
 
-# Importancia RF
+# Importancia RF (siempre disponible; útil aunque el best sea otro)
 prep = fitted['Random Forest'].named_steps['prep']
-names = ['edad'] + list(prep.named_transformers_['cat'].get_feature_names_out(['zona','departamento','sexo']))
-imp = pd.Series(fitted['Random Forest'].named_steps['clf'].feature_importances_, index=names).sort_values(ascending=False)
+from src.fase3_helpers import FEATURES_NUM, FEATURES_CAT
+names = list(FEATURES_NUM) + list(
+    prep.named_transformers_['cat'].get_feature_names_out(FEATURES_CAT)
+)
+imp = pd.Series(
+    fitted['Random Forest'].named_steps['clf'].feature_importances_, index=names
+).sort_values(ascending=False)
 display(imp.head(12).to_frame('importancia'))
-imp.head(12).iloc[::-1].plot(kind='barh', figsize=(8,4), title='Importancia RF')
-plt.tight_layout(); plt.savefig(DIR_FIG/'F3_notebook_imp.png'); plt.show()
+imp.head(12).iloc[::-1].plot(kind='barh', figsize=(8, 4), title='Importancia RF')
+plt.tight_layout()
+plt.savefig(DIR_FIG / 'F3_notebook_imp.png')
+plt.show()
 
-# Errores
 err = test_df.copy()
 err['proba'], err['pred'] = proba, pred
-err['tipo'] = np.where((err[TARGET]==1)&(err.pred==0), 'FN', np.where((err[TARGET]==0)&(err.pred==1), 'FP', 'OK'))
+err['tipo'] = np.where(
+    (err[TARGET] == 1) & (err.pred == 0), 'FN',
+    np.where((err[TARGET] == 0) & (err.pred == 1), 'FP', 'OK'),
+)
 display(pd.crosstab(err['zona'], err['tipo'], normalize='index').round(3))
-display(err[err.tipo=='FN'].groupby('edad').size().rename('FN').to_frame().join(
-        err[err[TARGET]==1].groupby('edad').size().rename('positivos')).assign(tasa_FN=lambda d: d.FN/d.positivos))
+display(
+    err[err.tipo == 'FN'].groupby('edad').size().rename('FN').to_frame().join(
+        err[err[TARGET] == 1].groupby('edad').size().rename('positivos')
+    ).assign(tasa_FN=lambda d: d.FN / d.positivos)
+)
 """))
-    cells.append(md("""## 5. Predicción manual — ingresar X y ver el Y de cada modelo
+    cells.append(md("""## 6. Predicción manual — ingresar X y ver el Y de cada modelo
 
-Editá las 4 variables de abajo y volvé a ejecutar la celda. Cada modelo responde con su chance
+Editá las variables de abajo y volvé a ejecutar la celda. Cada modelo responde con su chance
 y con `Y_predicho` (0 = asiste, 1 = no asiste).
 """))
-    cells.append(code("""# >>> EDITÁ SOLO ESTOS 4 VALORES <<<
+    cells.append(code("""# >>> EDITÁ ESTOS VALORES <<<
 edad = 16
 zona = 'Rural'                 # 'Urbana' o 'Rural'
 departamento = 'San Pedro'     # ver lista impresa abajo
 sexo = 'Hombre'                # 'Hombre' o 'Mujer'
+condicion_actividad = 'Ocupado'  # 'Ocupado' | 'Desocupado' | 'Inactivo'
+pobreza = 'Extrema'              # 'Extrema' | 'No extrema' | 'No pobre'
+ipcm = 400_000                   # ingreso per cápita del hogar (Gs)
 
 # Esta celda funciona sola (no hace falta correr todo el notebook antes)
 import sys
 from pathlib import Path
+from importlib import reload
 import joblib
 
 _raiz = Path.cwd().parent if Path.cwd().name == 'notebooks' else Path.cwd()
 sys.path.insert(0, str(_raiz))
-from src.fase3_helpers import (
-    make_feature_frame, predict_with_models,
-    ZONAS_VALIDAS, SEXOS_VALIDOS, DEPARTAMENTOS_VALIDOS,
-)
+
+import src.fase3_helpers as _f3
+_f3 = reload(_f3)  # evita usar una versión vieja en memoria del kernel
+make_feature_frame = _f3.make_feature_frame
+predict_with_models = _f3.predict_with_models
+ZONAS_VALIDAS = _f3.ZONAS_VALIDAS
+SEXOS_VALIDOS = _f3.SEXOS_VALIDOS
+DEPARTAMENTOS_VALIDOS = _f3.DEPARTAMENTOS_VALIDOS
+CONDICIONES_ACTIVIDAD = _f3.CONDICIONES_ACTIVIDAD
+POBREZAS_VALIDAS = _f3.POBREZAS_VALIDAS
 
 _dir_mod = _raiz / 'output' / 'modelos'
-if 'fitted' not in globals() or 'thresholds' not in globals():
-    _bundle = joblib.load(_dir_mod / 'fase3_modelos_todos.joblib')
-    fitted = _bundle['fitted']
-    thresholds = _bundle['thresholds']
-    BEST_NAME = _bundle.get('best_model', 'Logística')
-    print('(Modelos cargados desde fase3_modelos_todos.joblib)')
+_bundle = joblib.load(_dir_mod / 'fase3_modelos_todos.joblib')
+fitted = _bundle['fitted']
+thresholds = _bundle['thresholds']
+BEST_NAME = _bundle.get('best_model', 'Logística')
+print('(Modelos cargados desde fase3_modelos_todos.joblib)')
 
 print('Zonas válidas:', ZONAS_VALIDAS)
 print('Sexos válidos:', SEXOS_VALIDOS)
 print('Departamentos válidos:', DEPARTAMENTOS_VALIDOS)
+print('Condición de actividad:', CONDICIONES_ACTIVIDAD)
+print('Pobreza:', POBREZAS_VALIDAS)
 
-X_manual = make_feature_frame(edad, zona, departamento, sexo)
-print('\nX ingresado:')
+X_manual = make_feature_frame(
+    edad, zona, departamento, sexo,
+    condicion_actividad=condicion_actividad, pobreza=pobreza, ipcm=ipcm,
+)
+print('\\nX ingresado:')
 display(X_manual)
 
 tabla_manual = predict_with_models(X_manual, fitted, thresholds)
-display(tabla_manual[['modelo', 'chance_no_asiste', 'umbral', 'Y_predicho', 'etiqueta']])
+cols = ['modelo', 'chance_no_asiste', 'umbral', 'Y_predicho', 'etiqueta']
+display(tabla_manual[cols])
 print('Modelo oficial del proyecto:', BEST_NAME,
       '→', tabla_manual.loc[tabla_manual.modelo == BEST_NAME, 'etiqueta'].iloc[0])
 """))
-    cells.append(md("""## 6. Serialización
+    cells.append(md("""## 7. Serialización
 
 El modelo final, el umbral y el bundle con todos los modelos se guardan para reutilizar
 (`scripts/infer_fase3.py` o esta misma sección sin reentrenar).
@@ -944,21 +1041,23 @@ El modelo final, el umbral y el bundle con todos los modelos se guardan para reu
           'features': FEATURE_COLS, 'target': TARGET}
 joblib.dump(bundle, DIR_MOD/'fase3_modelo_final.joblib')
 joblib.dump({'fitted': fitted, 'thresholds': thresholds, 'features': FEATURE_COLS,
-             'target': TARGET, 'best_model': BEST_NAME},
+             'target': TARGET, 'best_model': BEST_NAME, 'cv_f1': CV_F1},
             DIR_MOD/'fase3_modelos_todos.joblib')
 meta = {'best_model': BEST_NAME, 'umbral': umbral, 'features': FEATURE_COLS, 'target': TARGET,
-        'test_year': TEST_YEAR, 'seed': SEMILLA, 'best_params': BEST}
-(DIR_MOD/'fase3_modelo_meta.json').write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding='utf-8')
+        'test_year': TEST_YEAR, 'seed': SEMILLA, 'best_params': BEST, 'cv_f1': CV_F1}
+(DIR_MOD/'fase3_modelo_meta.json').write_text(
+    json.dumps(meta, indent=2, ensure_ascii=False, default=str), encoding='utf-8'
+)
 resumen.to_csv(DIR_TAB/'fase3_metricas.csv', index=False, encoding='utf-8-sig')
 print('Guardado:', DIR_MOD/'fase3_modelo_final.joblib')
 print('Guardado:', DIR_MOD/'fase3_modelos_todos.joblib')
 """))
-    cells.append(md(f"""## 7. Conclusión
+    cells.append(md("""## 8. Conclusión
 
 - La línea base mayoritaria no detecta inasistencia (F1 ≈ 0); los tres modelos la superan en F1/AUC.
-- Modelo final: **{best}**, evaluado una sola vez en 2025.
-- Edad, zona y departamento dominan la importancia, en línea con H1/H3/H4.
-- Uso legítimo: priorización; no sanción individual. Límites: sin confusores socioeconómicos, sin Chaco,
+- Los hiperparámetros se eligen por CV temporal **dentro de train**; el test 2025 solo se mira al final.
+- Las features económicas (actividad, pobreza, IPCM) aportan señal adicional al bloque demográfico.
+- Uso legítimo: priorización; no sanción individual. Límites: sin distancia a la escuela, sin Chaco,
   un solo año de prueba, sin pesos de diseño DGEEC.
 """))
 

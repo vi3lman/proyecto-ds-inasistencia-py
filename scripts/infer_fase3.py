@@ -6,7 +6,8 @@ Uso con archivo:
 
 Uso manual (un adolescente):
   python scripts/infer_fase3.py --edad 16 --zona Rural --departamento "San Pedro" --sexo Hombre
-  python scripts/infer_fase3.py --edad 16 --zona Rural --departamento "San Pedro" --sexo Hombre --todos
+  python scripts/infer_fase3.py --edad 16 --zona Rural --departamento "San Pedro" --sexo Hombre \\
+      --condicion-actividad Ocupado --pobreza Extrema --ipcm 400000 --todos
 """
 from __future__ import annotations
 
@@ -22,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.fase3_helpers import (  # noqa: E402
     FEATURE_COLS,
+    FEATURES_CAT,
     make_feature_frame,
     predict_with_models,
 )
@@ -37,6 +39,34 @@ def load_frame(path: Path) -> pd.DataFrame:
     return pd.read_csv(path)
 
 
+def manual_frame(args: argparse.Namespace) -> pd.DataFrame:
+    return make_feature_frame(
+        args.edad,
+        args.zona,
+        args.departamento,
+        args.sexo,
+        condicion_actividad=args.condicion_actividad,
+        pobreza=args.pobreza,
+        log_ipcm=args.log_ipcm,
+        ipcm=args.ipcm,
+    )
+
+
+def row_feature_frame(row: pd.Series) -> pd.DataFrame:
+    kwargs = {}
+    if "condicion_actividad" in row.index and pd.notna(row["condicion_actividad"]):
+        kwargs["condicion_actividad"] = row["condicion_actividad"]
+    if "pobreza" in row.index and pd.notna(row["pobreza"]):
+        kwargs["pobreza"] = row["pobreza"]
+    if "log_ipcm" in row.index and pd.notna(row["log_ipcm"]):
+        kwargs["log_ipcm"] = float(row["log_ipcm"])
+    elif "ipcm" in row.index and pd.notna(row["ipcm"]):
+        kwargs["ipcm"] = float(row["ipcm"])
+    return make_feature_frame(
+        row["edad"], row["zona"], row["departamento"], row["sexo"], **kwargs
+    )
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Inferencia Fase 3 — inasistencia escolar")
     parser.add_argument("entrada", type=Path, nargs="?", default=None, help="CSV o parquet con las features")
@@ -49,6 +79,10 @@ def main(argv=None) -> int:
     parser.add_argument("--zona", type=str, default=None)
     parser.add_argument("--departamento", type=str, default=None)
     parser.add_argument("--sexo", type=str, default=None)
+    parser.add_argument("--condicion-actividad", type=str, default="Inactivo")
+    parser.add_argument("--pobreza", type=str, default="No pobre")
+    parser.add_argument("--ipcm", type=float, default=None, help="Ingreso per cápita (Gs); se transforma a log1p")
+    parser.add_argument("--log-ipcm", type=float, default=None)
     parser.add_argument(
         "--todos",
         action="store_true",
@@ -80,19 +114,14 @@ def main(argv=None) -> int:
                 thresholds[k] = args.umbral
 
         if manual:
-            frames = [make_feature_frame(args.edad, args.zona, args.departamento, args.sexo)]
+            frames = [manual_frame(args)]
         else:
             df = load_frame(args.entrada)
             faltan = [c for c in FEATURE_COLS if c not in df.columns]
             if faltan:
                 print(f"Faltan columnas: {faltan}", file=sys.stderr)
                 return 1
-            frames = [
-                make_feature_frame(
-                    row["edad"], row["zona"], row["departamento"], row["sexo"]
-                )
-                for _, row in df.iterrows()
-            ]
+            frames = [row_feature_frame(row) for _, row in df.iterrows()]
 
         outs = []
         for i, Xi in enumerate(frames):
@@ -128,7 +157,7 @@ def main(argv=None) -> int:
         umbral = float(meta.get("umbral", 0.5))
 
     if manual:
-        base = make_feature_frame(args.edad, args.zona, args.departamento, args.sexo)
+        base = manual_frame(args)
         X = base[features]
     else:
         base = load_frame(args.entrada)
@@ -137,9 +166,13 @@ def main(argv=None) -> int:
             print(f"Faltan columnas: {faltan}", file=sys.stderr)
             return 1
         X = base[features].copy()
-        X["edad"] = X["edad"].astype(float)
-        for c in ["zona", "departamento", "sexo"]:
-            X[c] = X[c].astype(str)
+        for c in FEATURES_CAT:
+            if c in X.columns:
+                X[c] = X[c].astype(str)
+        if "edad" in X.columns:
+            X["edad"] = X["edad"].astype(float)
+        if "log_ipcm" in X.columns:
+            X["log_ipcm"] = X["log_ipcm"].astype(float)
 
     proba = pipe.predict_proba(X)[:, 1]
     pred = (proba >= umbral).astype(int)
@@ -154,19 +187,23 @@ def main(argv=None) -> int:
         out.to_csv(args.salida, index=False, encoding="utf-8-sig")
         print(f"Guardado: {args.salida}  ({len(out)} filas, umbral={umbral})")
     elif manual:
-        print(
-            out[
-                [
-                    "edad",
-                    "zona",
-                    "departamento",
-                    "sexo",
-                    "proba_no_asiste",
-                    "pred_no_asiste",
-                    "etiqueta",
-                ]
-            ].to_string(index=False)
-        )
+        cols = [
+            c
+            for c in [
+                "edad",
+                "zona",
+                "departamento",
+                "sexo",
+                "condicion_actividad",
+                "pobreza",
+                "log_ipcm",
+                "proba_no_asiste",
+                "pred_no_asiste",
+                "etiqueta",
+            ]
+            if c in out.columns
+        ]
+        print(out[cols].to_string(index=False))
     else:
         out.to_csv(sys.stdout, index=False)
     return 0
