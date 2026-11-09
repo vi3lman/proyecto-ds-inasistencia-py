@@ -983,7 +983,7 @@ edad = 16
 zona = 'Rural'                 # 'Urbana' o 'Rural'
 departamento = 'San Pedro'     # ver lista impresa abajo
 sexo = 'Hombre'                # 'Hombre' o 'Mujer'
-condicion_actividad = 'Ocupado'  # 'Ocupado' | 'Desocupado' | 'Inactivo'
+condicion_actividad = 'Ocupado'  # Ocupado=trabaja | Desocupado=busca trabajo | Inactivo=no trabaja ni busca
 pobreza = 'Extrema'              # 'Extrema' | 'No extrema' | 'No pobre'
 ipcm = 400_000                   # ingreso per cápita del hogar (Gs)
 
