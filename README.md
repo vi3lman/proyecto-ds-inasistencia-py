@@ -1,6 +1,6 @@
 # Inasistencia escolar en la adolescencia paraguaya: magnitud, motivos declarados y brechas territoriales (2022–2025)
 
-Proyecto Integrador de Ciencia de Datos — **Fase 1** (descriptivo) y **Fase 2** (inferencial).
+Proyecto Integrador de Ciencia de Datos — **Fase 1** (descriptivo), **Fase 2** (inferencial) y **Fase 3** (predictivo).
 
 **Integrantes:** Matías Morínigo · César Vielman · Iván Paredes
 
@@ -63,6 +63,13 @@ jupyter nbconvert --to html notebooks/Fase1_DataScience_EPHC.ipynb --output ../o
 # Fase 2 (lee data/processed/dataset_fase1.parquet, generado por la Fase 1)
 jupyter nbconvert --to notebook --execute --inplace notebooks/Fase2_DataScience_EPHC.ipynb
 jupyter nbconvert --to html notebooks/Fase2_DataScience_EPHC.ipynb --output-dir output --output Fase2.html
+
+# Fase 3
+python scripts/build_fase3.py
+jupyter nbconvert --to notebook --execute --inplace notebooks/Fase3_DataScience_EPHC.ipynb
+jupyter nbconvert --to html notebooks/Fase3_DataScience_EPHC.ipynb --output-dir output --output Fase3.html
+# Inferencia sobre datos nuevos:
+# python scripts/infer_fase3.py datos.csv --salida pred.csv
 ```
 
 > **Detalle de formato crítico:** los archivos EPHC usan `;` como separador de columnas y `,` como separador
